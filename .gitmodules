@@ -1,0 +1,3 @@
+[submodule "rapid-prototype-template"]
+	path = Packages/RapidPrototypeTemplate
+	url = https://github.com/sbmeteturkay/rapid-prototype-template.git
