@@ -16,6 +16,12 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
+    "com.mete.rapidprototype": {
+      "version": "file:com.mete.rapidprototype",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.adaptiveperformance": {
       "version": "5.1.0",
       "depth": 1,

@@ -6,8 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Packages/com.mete.rapidprototype/Runtime/Scenes/BootScene.unity
+    guid: 9f9e94edf93874749bd29e76cd972d81
+  - enabled: 1
+    path: Packages/com.mete.rapidprototype/Runtime/Scenes/GameScene.unity
+    guid: 7c15cdff890eadd45ae7db068d85b928
+  - enabled: 1
+    path: Packages/com.mete.rapidprototype/Runtime/Scenes/MainScene.unity
+    guid: c2afe5ae08f8bde4f9c5acae6e722592
+  - enabled: 1
+    path: Packages/com.mete.rapidprototype/Runtime/Scenes/UIScene.unity
+    guid: 716f58b5038d29c4a8c9602860858aa9
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 184259428d9adfb4e808cc9bb9b2a42a, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
