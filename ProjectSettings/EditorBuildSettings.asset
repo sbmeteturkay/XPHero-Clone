@@ -6,17 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Packages/com.mete.rapidprototype/Runtime/Scenes/BootScene.unity
-    guid: 9f9e94edf93874749bd29e76cd972d81
+    path: Assets/Scenes/LayeredScenes/BootScene.unity
+    guid: 5dd7649f55f76e84e87fe16c94447903
   - enabled: 1
-    path: Packages/com.mete.rapidprototype/Runtime/Scenes/GameScene.unity
-    guid: 7c15cdff890eadd45ae7db068d85b928
+    path: Assets/Scenes/LayeredScenes/GameScene.unity
+    guid: 65cb9f74397063c4cb3488d0c700e0b0
   - enabled: 1
-    path: Packages/com.mete.rapidprototype/Runtime/Scenes/MainScene.unity
-    guid: c2afe5ae08f8bde4f9c5acae6e722592
+    path: Assets/Scenes/LayeredScenes/MainScene.unity
+    guid: fdacdf451b0e2d74ba582a434a2ccd3f
   - enabled: 1
-    path: Packages/com.mete.rapidprototype/Runtime/Scenes/UIScene.unity
-    guid: 716f58b5038d29c4a8c9602860858aa9
+    path: Assets/Scenes/LayeredScenes/UIScene.unity
+    guid: 95e675c23e2321448b55e04f8912403b
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 184259428d9adfb4e808cc9bb9b2a42a, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

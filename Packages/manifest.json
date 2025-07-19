@@ -1,7 +1,10 @@
 {
   "dependencies": {
     "com.cysharp.r3": "https://github.com/Cysharp/R3.git?path=src/R3.Unity/Assets/R3.Unity",
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.github-glitchenzo.nugetforunity": "4.4.0",
+    "com.kyrylokuzyk.primetween": "1.3.2",
+    "com.mete.rapidprototype": "file:Packages/RapidPrototypeTemplate",
     "com.unity.collab-proxy": "2.8.2",
     "com.unity.feature.mobile": "1.0.0",
     "com.unity.ide.rider": "3.0.31",
@@ -43,8 +46,7 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0",
-"com.mete.rapidprototype": "file:Packages/RapidPrototypeTemplate"
+    "com.unity.modules.xr": "1.0.0"
   },
   "scopedRegistries": [
     {
@@ -52,6 +54,14 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.github-glitchenzo.nugetforunity"
+      ],
+      "overrideBuiltIns": false
+    },
+    {
+      "name": "npm",
+      "url": "https://registry.npmjs.org",
+      "scopes": [
+        "com.kyrylokuzyk."
       ],
       "overrideBuiltIns": false
     }
