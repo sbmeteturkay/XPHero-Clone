@@ -4,15 +4,19 @@ using Zenject;
 
 namespace Game.Feature.CharacterMovement
 {
-    public class CharacterMovementView : MonoBehaviour
+    public class CharacterMovementView : MonoBehaviour, IInitializable
     {
         [Inject] private CharacterMovementModel _model;
         private Animator _animator;
 
+        public void Initialize()
+        {
+            _model.PropertyChanged += OnModelPropertyChanged;
+
+        }
         public void Initialize(Animator animator)
         {
             _animator = animator;
-            _model.PropertyChanged += OnModelPropertyChanged;
         }
 
         private void OnModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -21,6 +25,9 @@ namespace Game.Feature.CharacterMovement
             {
                 _animator.SetFloat("MoveSpeed", _model.MoveSpeed);
             }
+
+            Debug.Log(_model.CurrentDirection);
+            Debug.Log(_model.MoveSpeed);
             // Diğer görsel güncellemeler
         }
 
@@ -36,5 +43,7 @@ namespace Game.Feature.CharacterMovement
                 _model.PropertyChanged -= OnModelPropertyChanged;
             }
         }
+
+
     }
 }

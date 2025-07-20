@@ -6,12 +6,10 @@ namespace Game.Core.Installer
     public class GameplaySceneInstaller : MonoInstaller
     {
         [Inject] InputService inputService;
-
-        void OnEnable()
+        public override void InstallBindings()
         {
             inputService.EnablePlayerInput();
         }
-
         void OnDisable()
         {
             inputService.DisablePlayerInput();

@@ -12,16 +12,16 @@ namespace Game.Feature.CharacterMovement
         [Inject] private CharacterMovementView _view;
         [Inject] private InputService _inputService; // Core'dan gelen bir input servisi
 
-        private CompositeDisposable _disposables = new CompositeDisposable();
+        private CompositeDisposable _disposables = new ();
 
         public void Initialize()
         {
             // View'ı başlat
             // _view.Initialize(GetComponent<Animator>()); // Eğer View bir MonoBehaviour ise
 
-            // Input dinleme örnekleri
+            Debug.Log("char movement controller initialized");
             _inputService.OnMoveInput
-                .Subscribe(direction => _model.CurrentDirection = direction)
+                .Subscribe(direction => Debug.Log("Move direction: " + direction))
                 .AddTo(_disposables);
 
             _inputService.OnJumpInput

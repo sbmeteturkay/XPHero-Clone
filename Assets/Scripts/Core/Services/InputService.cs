@@ -77,6 +77,7 @@ namespace Game.Core.Services
         {
             if (_playerActionMap != null)
             {
+                Debug.Log("player input enabled");
                 _playerActionMap.Enable();
             }
         }
