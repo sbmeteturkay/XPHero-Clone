@@ -19,7 +19,5 @@ namespace Game.Feature.CharacterMovement
             get => _currentDirection;
             set => SetProperty(ref _currentDirection, value, nameof(CurrentDirection));
         }
-
-        // Diğer hareketle ilgili veriler ve iş mantığı
     }
 }

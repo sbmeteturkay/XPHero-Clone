@@ -16,12 +16,9 @@ namespace Game.Feature.CharacterMovement
 
         public void Initialize()
         {
-            // View'ı başlat
-            // _view.Initialize(GetComponent<Animator>()); // Eğer View bir MonoBehaviour ise
-
             Debug.Log("char movement controller initialized");
             _inputService.OnMoveInput
-                .Subscribe(direction => Debug.Log("Move direction: " + direction))
+                .Subscribe(x=>SetMovementInput(x))
                 .AddTo(_disposables);
 
             _inputService.OnJumpInput
@@ -30,13 +27,31 @@ namespace Game.Feature.CharacterMovement
                 .AddTo(_disposables);
         }
 
+        void SetMovementInput(Vector2 moveInput)
+        {
+            if (moveInput.sqrMagnitude < 0.01f)
+            {
+                _model.MoveSpeed = 0;
+                return;
+            }
+            _model.MoveSpeed=moveInput.magnitude*3f;
+            _model.CurrentDirection=new Vector3(moveInput.x,0,moveInput.y);
+        }
         public void Tick()
         {
             // Model'deki verilere göre View'ı güncelle
             // _view.SetAnimation(GetAnimationState(_model.CurrentDirection));
 
+            if(_model.MoveSpeed<=0)
+                return;
             // Hareket mantığı
-            // Transform'u güncelleme gibi Unity bileşenleriyle etkileşim
+            _view.characterController.Move(_model.CurrentDirection* _model.MoveSpeed * Time.deltaTime);
+            Quaternion targetRotation = Quaternion.LookRotation(_model.CurrentDirection);
+            _view.gameObject.transform.rotation = Quaternion.RotateTowards(
+                    _view.gameObject.transform.rotation,
+                targetRotation,
+                500* Time.deltaTime
+            );
         }
 
         private void Jump()
