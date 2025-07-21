@@ -16,7 +16,6 @@ namespace Game.Feature.CharacterMovement
 
         public void Initialize()
         {
-            Debug.Log("char movement controller initialized");
             _inputService.OnMoveInput
                 .Subscribe(x=>SetMovementInput(x))
                 .AddTo(_disposables);

@@ -6,6 +6,7 @@ namespace Game.Feature.CharacterMovement
 {
     public class CharacterMovementView : MonoBehaviour
     {
+        private static readonly int MoveSpeed = Animator.StringToHash("MoveSpeed");
         [Inject] private CharacterMovementModel _model;
         [SerializeField]private Animator _animator;
         public CharacterController characterController;
@@ -17,12 +18,10 @@ namespace Game.Feature.CharacterMovement
 
         private void OnModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Debug.Log(e.PropertyName);
             if (e.PropertyName == nameof(_model.MoveSpeed))
             {
-                _animator.SetFloat("MoveSpeed", _model.MoveSpeed);
+                _animator.SetFloat(MoveSpeed, _model.MoveSpeed);
             }
-            // Diğer görsel güncellemeler
         }
 
         public void SetAnimation(string animationName)
