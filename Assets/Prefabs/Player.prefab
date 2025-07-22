@@ -445,7 +445,7 @@ GameObject:
   - component: {fileID: 9151806512699944419}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -478,6 +478,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2a031d753eb41e0949feab71ec5f774, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animator: {fileID: 4873011558769654919}
+  characterController: {fileID: 9151806512699944419}
 --- !u!95 &4873011558769654919
 Animator:
   serializedVersion: 7
