@@ -17,7 +17,6 @@ namespace Game.Feature.Enemy
             _enemy = enemy;
             _playerService = playerService;
             enemy.animator.CrossFade(IEnemyState.AnimNames.Chase, 0.2f);
-            Debug.Log("Düşman: Chase Durumu");
         }
 
         public void Execute()
@@ -30,6 +29,7 @@ namespace Game.Feature.Enemy
             }
             else if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) > 4)
             {
+                //TODO: Turn back spawn area
                 _controller.TransitionToIdle();
             }
         }

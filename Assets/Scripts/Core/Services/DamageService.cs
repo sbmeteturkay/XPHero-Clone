@@ -1,27 +1,42 @@
-using Game.Core.Interfaces;
+// Scripts/Core/Services/DamageService.cs
 using UnityEngine;
+using Zenject;
+using Game.Core.Interfaces;
 
 namespace Game.Core.Services
 {
     public class DamageService
     {
-        // EventBus aracılığıyla hasar olaylarını yayınlamak için inject edilebilir.
-        // [Inject] private EventBus _eventBus;
+        [Inject] private SignalBus _signalBus;
 
         public void ApplyDamage(IDamageable target, float amount, GameObject instigator = null)
         {
-            if (target == null)
+            if (target != null)
             {
-                Debug.LogWarning("Hasar uygulanacak hedef null.");
-                return;
+                target.TakeDamage(amount, instigator);
+                //_signalBus.Fire(new DamageAppliedSignal { Target = target, Amount = amount, Instigator = instigator });
             }
-
-            target.TakeDamage(amount, instigator);
-
-            // Hasar olayını yayınla (örneğin, UI'da hasar sayısını göstermek için)
-            // _eventBus.Publish(new DamageTakenEvent { Target = target, Amount = amount, Instigator = instigator });
         }
 
-        // Kritik vuruş, zırh hesaplamaları gibi ek mantıklar buraya eklenebilir.
+        public void ApplyDamage(GameObject targetObject, float amount, GameObject instigator = null)
+        {
+            IDamageable target = targetObject.GetComponent<IDamageable>();
+            if (target != null)
+            {
+                ApplyDamage(target, amount, instigator);
+            }
+            else
+            {
+                Debug.LogWarning($"GameObject {targetObject.name} IDamageable arayüzünü implemente etmiyor.");
+            }
+        }
+    }
+
+    // Zenject Signal Tanımı
+    public class DamageAppliedSignal 
+    { 
+        public IDamageable Target; 
+        public float Amount; 
+        public GameObject Instigator; 
     }
 }

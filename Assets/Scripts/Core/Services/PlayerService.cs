@@ -1,3 +1,4 @@
+using Game.Core.Interfaces;
 using UnityEngine;
 using Zenject;
 
@@ -8,6 +9,7 @@ namespace Game.Core.Services
         // Oyuncunun Transform'unu tutacak ReactiveProperty veya doğrudan Transform
         // ReactiveProperty kullanmak, oyuncu transform'u değiştiğinde (örneğin sahne değişimi) diğer sistemlerin haberdar olmasını sağlar.
         public Transform PlayerTransform { get; private set; }
+        public IDamageable PlayerDamageable { get; private set; }
 
         // Oyuncunun GameObject'ini veya diğer bileşenlerini de tutabiliriz.
         // public GameObject PlayerGameObject { get; private set; }
@@ -21,12 +23,12 @@ namespace Game.Core.Services
             if (playerObject != null)
             {
                 PlayerTransform = playerObject.transform;
-                Debug.Log("PlayerService: Oyuncu bulundu.");
             }
             else
             {
                 Debug.LogWarning("PlayerService: Oyuncu GameObject bulunamadı! Lütfen oyuncunuza 'Player' tag'ini ekleyin.");
             }
+            PlayerDamageable = PlayerTransform.GetComponent<IDamageable>();
         }
 
         // Oyuncunun pozisyonunu, sağlığını vb. almak için metodlar eklenebilir.

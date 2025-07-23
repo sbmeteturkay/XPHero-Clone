@@ -10,7 +10,6 @@ namespace Game.Feature.CharacterMovement
         [SerializeField] GameObject character;
         public override void InstallBindings()
         {
-            Debug.Log("character install");
             // Model, View, Controller/Presenter/ViewModel bindingleri burada yapılır
             Container.BindInterfacesAndSelfTo<CharacterMovementModel>().AsSingle();
             Container.BindInterfacesAndSelfTo<CharacterMovementController>().AsSingle();

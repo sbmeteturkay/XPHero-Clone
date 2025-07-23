@@ -1,7 +1,9 @@
 using System.Linq;
 using Game.Core.Services;
 using Game.Feature.Enemy;
+using Game.Feature.Player;
 using Game.Feature.Spawn;
+using UnityEngine;
 using Zenject;
 
 namespace Game.Core.Installer
@@ -13,18 +15,27 @@ namespace Game.Core.Installer
         {
             Container.BindInterfacesAndSelfTo<PlayerService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<SpawnManager>().AsSingle().NonLazy();
-            Container.DeclareSignal<EnemyDiedSignal>();
-            Container.DeclareSignal<EnemyTookDamageSignal>();
-            inputService.EnablePlayerInput();
+
             Container.Bind<DamageService>().AsSingle();
             
-             SpawnEnemies();
+            
+            Container.DeclareSignal<EnemyDiedSignal>();
+            Container.DeclareSignal<EnemyTookDamageSignal>();
+            Container.DeclareSignal<DamageAppliedSignal>();
+            
+            Container.DeclareSignal<PlayerTookDamageSignal>();
+            Container.DeclareSignal<PlayerDiedSignal>();
+            Container.DeclareSignal<PlayerHealedSignal>();
+            
+            SpawnEnemies();
+             
+             inputService.EnablePlayerInput();
         }
 
         private void SpawnEnemies()
         {
             // Tüm sahnedeki SpawnPoint'lerden kullanılan benzersiz EnemyData'ları topla
-            var uniqueEnemyDatas = FindObjectsOfType<SpawnPoint>()
+            var uniqueEnemyDatas = FindObjectsByType<SpawnPoint>(sortMode: FindObjectsSortMode.None)
                 .Where(sp => sp.EnemyToSpawn != null && sp.EnemyToSpawn.EnemyPrefab != null)
                 .Select(sp => sp.EnemyToSpawn)
                 .Distinct()

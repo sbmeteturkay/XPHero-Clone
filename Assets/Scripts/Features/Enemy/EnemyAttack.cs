@@ -12,6 +12,7 @@ namespace Game.Feature.Enemy
         [Inject] private Enemy _enemy;
 
         private float _attackCooldownTimer;
+        public bool CanAttack { get; set; }
 
         void Update()
         {
@@ -19,37 +20,17 @@ namespace Game.Feature.Enemy
             {
                 _attackCooldownTimer -= Time.deltaTime;
             }
-        }
-
-        public void StartAttack()
-        {
-            if (_attackCooldownTimer <= 0)
+            else if( CanAttack )
             {
-                // Saldırı animasyonunu tetikle
-                // GetComponent<Animator>().SetTrigger("Attack");
-
-                // Hasar uygulama mantığı (animasyonun belirli bir frame'inde çağrılabilir)
-                // Şimdilik doğrudan çağırıyoruz
                 PerformAttack();
-
-                _attackCooldownTimer = _enemy.Data.AttackCooldown;
             }
-        }
-
-        public void StopAttack()
-        {
-            // Saldırı animasyonunu durdur veya resetle
         }
 
         private void PerformAttack()
         {
-            // Oyuncuyu hedef al
-            IDamageable target = _playerService.PlayerTransform.GetComponent<IDamageable>();
-            if (target != null)
-            {
-                _damageService.ApplyDamage(target, _enemy.Data.AttackDamage, _enemy.gameObject);
-                Debug.Log($"{_enemy.Data.EnemyName} oyuncuya { _enemy.Data.AttackDamage} hasar verdi.");
-            }
+            _attackCooldownTimer = _enemy.Data.AttackCooldown;
+            _damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
+            //Debug.Log($"{_enemy.Data.EnemyName} oyuncuya { _enemy.Data.AttackDamage} hasar verdi.");
         }
     }
 }

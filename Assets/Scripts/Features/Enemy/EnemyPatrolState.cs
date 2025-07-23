@@ -59,6 +59,7 @@ namespace Game.Feature.Enemy
         {
         }
 
+        //TODO: Patrol inside of given area
         private void SetupPatrolPoints()
         {
             // Spawn noktası etrafında rastgele patrol noktaları oluştur

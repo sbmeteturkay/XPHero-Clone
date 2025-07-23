@@ -16,9 +16,8 @@ namespace Game.Feature.Enemy
             _controller = controller;
             _enemy = enemy;
             _playerService = playerService;
-            Debug.Log("Düşman: Attack Durumu");
             _enemy.animator.CrossFade(IEnemyState.AnimNames.Attack, 0.2f);
-            _enemyAttack.StartAttack();
+            _enemyAttack.CanAttack = true;
         }
 
         public void Execute()
@@ -31,8 +30,8 @@ namespace Game.Feature.Enemy
 
         public void Exit()
         {
-            Debug.Log("Düşman: Attack Durumundan Çıkıldı");
-            _enemyAttack.StopAttack();
+            _enemyAttack.CanAttack = false;
         }
+        
     }
 }

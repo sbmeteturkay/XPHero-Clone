@@ -28,8 +28,6 @@ namespace Game.Feature.Spawn
             {
                TrySpawnEnemy(sp);
             }
-
-            Debug.Log($"SpawnManager başlatıldı. {_spawnPoints.Count} spawn noktası bulundu.");
         }
         public void Tick()
         {
