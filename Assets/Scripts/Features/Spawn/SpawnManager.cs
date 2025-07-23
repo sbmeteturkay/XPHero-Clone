@@ -50,7 +50,6 @@ namespace Game.Feature.Spawn
                 Enemy.Enemy newEnemy = _enemyFactory.Create(spawnPoint.EnemyToSpawn);
                 newEnemy.gameObject.transform.position = spawnPoint.GetAvailableSpawnPosition();
                 spawnPoint.AddActiveEnemy(newEnemy);
-                Debug.Log($"Düşman {newEnemy.Data.EnemyName} {spawnPoint.name} noktasında doğdu.");
             }
         }
 

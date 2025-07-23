@@ -9,7 +9,7 @@ namespace Game.Feature.Enemy
     {
         [Inject] private DamageService _damageService;
         [Inject] private SignalBus _signalBus; // Zenject SignalBus
-
+        public Animator animator;
         private EnemyData _enemyData;
         private float _currentHealth;
         private IMemoryPool _pool; // Havuzu tutmak için
@@ -28,18 +28,12 @@ namespace Game.Feature.Enemy
                 Die();
             }
         }
-
         private void Die()
         {
             Debug.Log($"{_enemyData.EnemyName} öldü.");
             _signalBus.Fire(new EnemyDiedSignal { Enemy = this });
             // Object Pool'a geri dönme
             _pool.Despawn(this);
-        }
-
-        // Zenject MemoryPool için Factory metodu
-        public class Factory : PlaceholderFactory<EnemyData, Enemy>
-        {
         }
 
         // IPoolable arayüzü implementasyonu
@@ -49,15 +43,18 @@ namespace Game.Feature.Enemy
             _enemyData = data;
             _currentHealth = _enemyData.MaxHealth;
             gameObject.SetActive(true);
-            Debug.Log($"{_enemyData.EnemyName} havuzdan alındı (spawned).");
         }
 
         public void OnDespawned()
         {
             gameObject.SetActive(false);
             _pool = null;
-            Debug.Log($"{_enemyData.EnemyName} havuza geri döndü (despawned).");
         }
+        // Zenject MemoryPool için Factory metodu
+        public class Factory : PlaceholderFactory<EnemyData, Enemy>
+        {
+        }
+
     }
 
     // Zenject Signal Tanımları

@@ -9,7 +9,7 @@ namespace Game.Feature.Enemy
             Container.Bind<Enemy>().FromComponentInHierarchy().AsSingle();
             Container.Bind<EnemyMovement>().FromComponentInHierarchy().AsSingle();
             Container.Bind<EnemyAttack>().FromComponentInHierarchy().AsSingle();
-            Container.Bind<EnemyStateController>().FromComponentInHierarchy().AsSingle();
+            Container.BindInterfacesAndSelfTo<EnemyStateController>().FromComponentInHierarchy().AsSingle();
         }
     }
 }

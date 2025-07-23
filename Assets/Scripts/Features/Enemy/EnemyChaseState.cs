@@ -1,0 +1,37 @@
+using Game.Core.Services;
+using UnityEngine;
+using Zenject;
+
+namespace Game.Feature.Enemy
+{
+    public class EnemyChaseState : IEnemyState
+    {
+        private EnemyStateController _controller;
+        private Enemy _enemy;
+        private PlayerService _playerService;
+        [Inject] private EnemyMovement _enemyMovement; // Zenject ile inject edilebilir
+
+        public void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService)
+        {
+            _controller = controller;
+            _enemy = enemy;
+            _playerService = playerService;
+            Debug.Log("Düşman: Chase Durumu");
+        }
+
+        public void Execute()
+        {
+            _enemyMovement.SetDestination(_playerService.PlayerTransform.position);
+
+            if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) < _enemy.Data.AttackRange)
+            {
+                _controller.TransitionToAttack();
+            }
+        }
+
+        public void Exit()
+        {
+            Debug.Log("Düşman: Chase Durumundan Çıkıldı");
+        }
+    }
+}
