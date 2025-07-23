@@ -23,8 +23,6 @@ namespace Game.Feature.Enemy
             _enemy = enemy;
             _playerService = playerService;
 
-            Debug.Log($"{_enemy.Data.EnemyName}: Patrol Durumu");
-
             // Patrol noktalarını belirle (örneğin, spawn noktası etrafında rastgele noktalar)
             SetupPatrolPoints();
 
@@ -39,7 +37,7 @@ namespace Game.Feature.Enemy
             if (distanceToPlayer <
                 _enemy.Data.AttackRange * 2) // Saldırı menzilinin 2 katı kadar mesafede oyuncuyu fark et
             {
-                //_controller.TransitionToChase();
+                _controller.TransitionToChase();
                 return;
             }
 
@@ -59,7 +57,6 @@ namespace Game.Feature.Enemy
 
         public void Exit()
         {
-            Debug.Log($"{_enemy.Data.EnemyName}: Patrol Durumundan Çıkıldı");
         }
 
         private void SetupPatrolPoints()
@@ -81,7 +78,6 @@ namespace Game.Feature.Enemy
             _enemy.animator.CrossFade(IEnemyState.AnimNames.Walk, 0.2f);
             _currentPatrolIndex = (_currentPatrolIndex + 1) % _patrolPoints.Length;
             _enemyMovement.SetDestination(_patrolPoints[_currentPatrolIndex]);
-            Debug.Log($"{_enemy.Data.EnemyName}: Patrol noktası {_currentPatrolIndex}'e gidiyor.");
         }
     }
 }

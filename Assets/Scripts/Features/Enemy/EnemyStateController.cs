@@ -30,7 +30,6 @@ namespace Game.Feature.Enemy
         }
         public void Initialize()
         {
-            Debug.Log("init");
             // Başlangıç durumu
             ChangeState(_idleState);
         }
@@ -66,6 +65,7 @@ namespace Game.Feature.Enemy
             public static readonly string Idle = "Idle";
             public static readonly string Walk = "Walk";
             public static readonly string Attack = "Attack";
+            public static readonly string Chase = "Chase";
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Game.Feature.Enemy
             _controller = controller;
             _enemy = enemy;
             _playerService = playerService;
+            enemy.animator.CrossFade(IEnemyState.AnimNames.Chase, 0.2f);
             Debug.Log("Düşman: Chase Durumu");
         }
 
@@ -27,11 +28,15 @@ namespace Game.Feature.Enemy
             {
                 _controller.TransitionToAttack();
             }
+            else if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) > 4)
+            {
+                _controller.TransitionToIdle();
+            }
         }
 
         public void Exit()
         {
-            Debug.Log("Düşman: Chase Durumundan Çıkıldı");
+            _enemyMovement.StopMoving();
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Game.Feature.Enemy
             _enemy = enemy;
             _playerService = playerService;
             Debug.Log("Düşman: Attack Durumu");
+            _enemy.animator.CrossFade(IEnemyState.AnimNames.Attack, 0.2f);
             _enemyAttack.StartAttack();
         }
 
