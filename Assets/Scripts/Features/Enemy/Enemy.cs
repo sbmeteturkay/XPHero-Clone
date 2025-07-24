@@ -2,6 +2,7 @@ using UnityEngine;
 using Zenject;
 using Game.Core.Interfaces;
 using Game.Core.Services;
+using Game.Feature.Spawn;
 
 namespace Game.Feature.Enemy
 {
@@ -13,7 +14,8 @@ namespace Game.Feature.Enemy
         private EnemyData _enemyData;
         private float _currentHealth;
         private IMemoryPool _pool; // Havuzu tutmak için
-
+        private SpawnPoint _spawnPoint;
+        public bool CanChaseOrAttack => _spawnPoint.EnemyCanChaseOrAttack;
         public EnemyData Data => _enemyData;
 
         public void TakeDamage(float amount, GameObject instigator = null)
@@ -50,11 +52,15 @@ namespace Game.Feature.Enemy
             gameObject.SetActive(false);
             _pool = null;
         }
+
+        public void SetSpawnPoint(SpawnPoint spawnPoint)
+        {
+            _spawnPoint = spawnPoint;
+        }
         // Zenject MemoryPool için Factory metodu
         public class Factory : PlaceholderFactory<EnemyData, Enemy>
         {
         }
-
     }
 
     // Zenject Signal Tanımları
@@ -67,5 +73,5 @@ namespace Game.Feature.Enemy
     public class EnemyDiedSignal
     {
         public Enemy Enemy;
-    }
+    }    
 }

@@ -23,9 +23,20 @@ namespace Game.Core.Installer
             Container.DeclareSignal<EnemyTookDamageSignal>();
             Container.DeclareSignal<DamageAppliedSignal>();
             
+            Container.BindInterfacesAndSelfTo<EnemyDetectionService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<PlayerTargetingService>().AsSingle().NonLazy();
+            
             Container.DeclareSignal<PlayerTookDamageSignal>();
             Container.DeclareSignal<PlayerDiedSignal>();
             Container.DeclareSignal<PlayerHealedSignal>();
+            
+            Container.DeclareSignal < PlayerEnteredSpawnAreaSignal>();
+            Container.DeclareSignal < PlayerExitedSpawnAreaSignal>();
+            
+            Container.DeclareSignal < PlayerTargetFoundSignal>();
+            Container.DeclareSignal < PlayerTargetLostSignal>();
+            
+            Container.DeclareSignal < PlayerAttackedSignal>();
             
             SpawnEnemies();
              

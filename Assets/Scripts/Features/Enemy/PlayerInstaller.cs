@@ -8,8 +8,6 @@ namespace Game.Feature.Player
         public override void InstallBindings()
         {
             Container.Bind<PlayerHealth>().FromComponentInHierarchy().AsSingle();
-            
-
         }
     }
 }

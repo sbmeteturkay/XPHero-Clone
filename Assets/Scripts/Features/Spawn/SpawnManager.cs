@@ -21,6 +21,8 @@ namespace Game.Feature.Spawn
 
             // Düşman ölüm sinyaline abone ol
             _signalBus.Subscribe<EnemyDiedSignal>(OnEnemyDied);
+            _signalBus.Subscribe<PlayerEnteredSpawnAreaSignal>(OnPlayerEnteredSpawnArea);
+            _signalBus.Subscribe<PlayerExitedSpawnAreaSignal>(OnPlayerExitedSpawnArea);
 
 
             // Başlangıçta tüm spawn noktalarından düşmanları spawn et
@@ -29,6 +31,31 @@ namespace Game.Feature.Spawn
                TrySpawnEnemy(sp);
             }
         }
+
+        private void OnPlayerExitedSpawnArea(PlayerExitedSpawnAreaSignal obj)
+        {
+            //TODO: use  LINQ methods 
+            foreach (var spawnPoint in _spawnPoints)
+            {
+                if (spawnPoint.gameObject == obj.SpawnArea.gameObject)
+                {
+                    spawnPoint.EnemyCanChaseOrAttack = false;
+                }
+            }
+        }
+
+        private void OnPlayerEnteredSpawnArea(PlayerEnteredSpawnAreaSignal obj)
+        {
+            //TODO: use  LINQ methods 
+            foreach (var spawnPoint in _spawnPoints)
+            {
+                if (spawnPoint.gameObject == obj.SpawnArea.gameObject)
+                {
+                    spawnPoint.EnemyCanChaseOrAttack = true;
+                }
+            }
+        }
+
         public void Tick()
         {
             // Her spawn noktasını kontrol et ve gerekirse düşman spawn et
@@ -47,6 +74,7 @@ namespace Game.Feature.Spawn
             {
                 Enemy.Enemy newEnemy = _enemyFactory.Create(spawnPoint.EnemyToSpawn);
                 newEnemy.gameObject.transform.position = spawnPoint.GetAvailableSpawnPosition();
+                newEnemy.SetSpawnPoint(spawnPoint);
                 spawnPoint.AddActiveEnemy(newEnemy);
             }
         }
@@ -67,6 +95,8 @@ namespace Game.Feature.Spawn
         public void Dispose()
         {
             _signalBus.Unsubscribe<EnemyDiedSignal>(OnEnemyDied);
+            _signalBus.Unsubscribe<PlayerEnteredSpawnAreaSignal>(OnPlayerEnteredSpawnArea);
+            _signalBus.Unsubscribe<PlayerExitedSpawnAreaSignal>(OnPlayerExitedSpawnArea);
         }
     }
 }

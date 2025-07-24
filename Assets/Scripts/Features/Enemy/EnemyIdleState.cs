@@ -27,11 +27,6 @@ namespace Game.Feature.Enemy
         }
         public void Execute()
         {
-            // Oyuncuyu menzil içinde mi kontrol et
-            // if (Vector3.Distance(_enemy.transform.position, _playerService.GetPlayerPosition()) < _enemy.Data.AttackRange * 2)
-            // {
-            //     //_controller.TransitionToChase();
-            // }
         }
 
         public void Exit()

@@ -1,5 +1,6 @@
 using Game.Core.Interfaces;
 using Game.Core.Services;
+using PrimeTween;
 using UnityEngine;
 using Zenject;
 
@@ -28,9 +29,22 @@ namespace Game.Feature.Enemy
 
         private void PerformAttack()
         {
+            RotateToTarget(_playerService.PlayerTransform);
             _attackCooldownTimer = _enemy.Data.AttackCooldown;
             _damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
             //Debug.Log($"{_enemy.Data.EnemyName} oyuncuya { _enemy.Data.AttackDamage} hasar verdi.");
+        }
+        void RotateToTarget(Transform target)
+        {
+            Vector3 direction = target.position - transform.position;
+            direction.y = 0f;
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            Tween.Rotation(
+                transform,
+                targetRotation,
+                duration: _enemy.Data.AttackCooldown/2,
+                Ease.InOutSine
+            );
         }
     }
 }

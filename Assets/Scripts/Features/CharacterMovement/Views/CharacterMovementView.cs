@@ -6,7 +6,6 @@ namespace Game.Feature.CharacterMovement
 {
     public class CharacterMovementView : MonoBehaviour
     {
-        private static readonly int MoveSpeed = Animator.StringToHash("MoveSpeed");
         [Inject] private CharacterMovementModel _model;
         [SerializeField]private Animator _animator;
         public CharacterController characterController;
@@ -20,15 +19,17 @@ namespace Game.Feature.CharacterMovement
         {
             if (e.PropertyName == nameof(_model.MoveSpeed))
             {
-                _animator.SetFloat(MoveSpeed, _model.MoveSpeed);
+                if (_model.MoveSpeed > 0)
+                {
+                    _animator.CrossFade("Move",.2f);
+                }
+                else
+                {
+                    _animator.CrossFade("Idle",.2f);
+                }
             }
         }
-
-        public void SetAnimation(string animationName)
-        {
-            _animator.Play(animationName);
-        }
-
+        
         private void OnDestroy()
         {
             if (_model != null)
@@ -36,7 +37,5 @@ namespace Game.Feature.CharacterMovement
                 _model.PropertyChanged -= OnModelPropertyChanged;
             }
         }
-
-
     }
 }

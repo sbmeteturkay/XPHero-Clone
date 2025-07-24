@@ -16,7 +16,7 @@ namespace Game.Feature.Spawn
         private float _respawnTimer;
 
         public bool CanSpawn => ActiveEnemies.Count < MaxEnemies && _respawnTimer <= 0;
-
+        public bool EnemyCanChaseOrAttack;
         public void EnemyDied(Enemy.Enemy enemy)
         {
             if (ActiveEnemies.Contains(enemy))
@@ -61,5 +61,6 @@ namespace Game.Feature.Spawn
                 _respawnTimer -= Time.deltaTime;
             }
         }
+        
     }
 }

@@ -32,13 +32,16 @@ namespace Game.Feature.Enemy
 
         public void Execute()
         {
-            // Oyuncuyu menzil içinde mi kontrol et
-            float distanceToPlayer = Vector3.Distance(_enemy.transform.position, _playerService.GetPlayerPosition());
-            if (distanceToPlayer <
-                _enemy.Data.AttackRange * 2) // Saldırı menzilinin 2 katı kadar mesafede oyuncuyu fark et
+            if (_controller.CanChase)
             {
-                _controller.TransitionToChase();
-                return;
+                // Oyuncuyu menzil içinde mi kontrol et
+                float distanceToPlayer = Vector3.Distance(_enemy.transform.position, _playerService.GetPlayerPosition());
+                if (distanceToPlayer <
+                    _enemy.Data.AttackRange * 2) // Saldırı menzilinin 2 katı kadar mesafede oyuncuyu fark et
+                {
+                    _controller.TransitionToChase();
+                    return;
+                }
             }
 
             // Mevcut patrol noktasına ulaştı mı kontrol et

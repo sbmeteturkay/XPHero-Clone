@@ -19,6 +19,8 @@ namespace Game.Feature.Enemy
         private EnemyChaseState _chaseState;
         private EnemyAttackState _attackState;
 
+        public bool CanChase => _enemy.CanChaseOrAttack;
+
         void Awake()
         {
             // Durumları oluştur ve inject et
@@ -26,7 +28,6 @@ namespace Game.Feature.Enemy
             _patrolState = _container.Instantiate<EnemyPatrolState>();
             _chaseState = _container.Instantiate<EnemyChaseState>();
             _attackState = _container.Instantiate<EnemyAttackState>();
-
         }
         public void Initialize()
         {
@@ -34,6 +35,7 @@ namespace Game.Feature.Enemy
             ChangeState(_idleState);
         }
 
+        //TODO: custom tick should be added
         public void Tick()
         {
             _currentState?.Execute();
@@ -47,7 +49,11 @@ namespace Game.Feature.Enemy
         }
 
         // Diğer durum geçiş metodları
-        public void TransitionToChase() { ChangeState(_chaseState); }
+        public void TransitionToChase()
+        {
+            if (CanChase)
+                ChangeState(_chaseState);
+        }
         public void TransitionToAttack() { ChangeState(_attackState); }
         public void TransitionToIdle() { ChangeState(_idleState); }
         public void TransitionToPatrol() { ChangeState(_patrolState); }
