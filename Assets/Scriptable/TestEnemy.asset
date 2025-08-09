@@ -18,4 +18,5 @@ MonoBehaviour:
   AttackDamage: 4
   AttackRange: 2
   AttackCooldown: 1
+  respawnTime: 5
   EnemyPrefab: {fileID: 5077545613026155883, guid: 8e7ebb3cfab10ee458b790fa0f6f607f, type: 3}

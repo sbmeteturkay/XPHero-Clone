@@ -4,23 +4,23 @@ using Zenject;
 
 namespace Game.Feature.Enemy
 {
-    public class EnemyAttackState : IEnemyState
+    public class EnemyAttackState : BaseState
     {
-        private EnemyStateController _controller;
-        private Enemy _enemy;
-        private PlayerService _playerService;
-        [Inject] private EnemyAttack _enemyAttack; // Zenject ile inject edilebilir
 
-        public void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService)
+        private EnemyAttack _enemyAttack; // Zenject ile inject edilebilir
+
+        public EnemyAttackState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy, playerService)
         {
-            _controller = controller;
-            _enemy = enemy;
-            _playerService = playerService;
+            _enemyAttack = enemy.EnemyAttack;
+        }
+
+        public override void Enter()
+        {
             _enemy.animator.CrossFade(IEnemyState.AnimNames.Attack, 0.2f);
             _enemyAttack.CanAttack = true;
         }
 
-        public void Execute()
+        public override void Execute()
         {
             if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) > _enemy.Data.AttackRange)
             {
@@ -28,10 +28,9 @@ namespace Game.Feature.Enemy
             }
         }
 
-        public void Exit()
+        public override void Exit()
         {
             _enemyAttack.CanAttack = false;
         }
-        
     }
 }

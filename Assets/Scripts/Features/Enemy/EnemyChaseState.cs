@@ -4,22 +4,21 @@ using Zenject;
 
 namespace Game.Feature.Enemy
 {
-    public class EnemyChaseState : IEnemyState
+    public class EnemyChaseState : BaseState
     {
-        private EnemyStateController _controller;
-        private Enemy _enemy;
-        private PlayerService _playerService;
-        [Inject] private EnemyMovement _enemyMovement; // Zenject ile inject edilebilir
+        private EnemyMovement _enemyMovement;
 
-        public void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService)
+        public EnemyChaseState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy, playerService)
         {
-            _controller = controller;
-            _enemy = enemy;
-            _playerService = playerService;
-            enemy.animator.CrossFade(IEnemyState.AnimNames.Chase, 0.2f);
+            _enemyMovement = enemy.EnemyMovement;
         }
 
-        public void Execute()
+        public override void Enter()
+        {
+            //animator.CrossFade(IEnemyState.AnimNames.Chase, 0.2f);
+        }
+
+        public override void Execute()
         {
             _enemyMovement.SetDestination(_playerService.PlayerTransform.position);
 
@@ -34,7 +33,7 @@ namespace Game.Feature.Enemy
             }
         }
 
-        public void Exit()
+        public override void Exit()
         {
             _enemyMovement.StopMoving();
         }

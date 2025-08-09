@@ -1,3 +1,4 @@
+using System.Collections;
 using Game.Core.Interfaces;
 using Game.Core.Services;
 using PrimeTween;
@@ -29,22 +30,30 @@ namespace Game.Feature.Enemy
 
         private void PerformAttack()
         {
-            RotateToTarget(_playerService.PlayerTransform);
+            StopAllCoroutines();
+            StartCoroutine(RotateToTarget(_playerService.PlayerTransform));
             _attackCooldownTimer = _enemy.Data.AttackCooldown;
-            _damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
+            //_damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
             //Debug.Log($"{_enemy.Data.EnemyName} oyuncuya { _enemy.Data.AttackDamage} hasar verdi.");
         }
-        void RotateToTarget(Transform target)
+        IEnumerator RotateToTarget(Transform target)
         {
             Vector3 direction = target.position - transform.position;
             direction.y = 0f;
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            Tween.Rotation(
-                transform,
-                targetRotation,
-                duration: _enemy.Data.AttackCooldown/2,
-                Ease.InOutSine
-            );
+
+            if (direction.sqrMagnitude < 0.0001f)
+                yield break;
+
+            Quaternion start = transform.rotation;
+            Quaternion end = Quaternion.LookRotation(direction);
+
+            float t = 0f;
+            while (t < 1f)
+            {
+                t += Time.deltaTime / 0.2f;
+                transform.rotation = Quaternion.Slerp(start, end, t);
+                yield return null;
+            }
         }
     }
 }

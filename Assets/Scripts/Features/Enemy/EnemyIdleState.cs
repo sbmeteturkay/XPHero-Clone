@@ -1,36 +1,56 @@
-using System;
-using Cysharp.Threading.Tasks;
 using Game.Core.Services;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Game.Feature.Enemy
 {
-    public class EnemyIdleState : IEnemyState
+    public class EnemyIdleState : BaseState
     {
-        private EnemyStateController _controller;
-        private Enemy _enemy;
-        private PlayerService _playerService;
+        private float _waitTime;
+        private float _timer;
 
-        public void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService)
+        public EnemyIdleState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy, playerService)
         {
-            _controller = controller;
-            _enemy = enemy;
-            _playerService = playerService;
-            DelayThenDoSomething();
+        }
+
+        public override void Enter()
+        {
+            _waitTime = Random.Range(0f, 3f);
+            _timer = 0f;
             _enemy.animator.CrossFade(IEnemyState.AnimNames.Idle, 0.2f);
         }
-        private async void DelayThenDoSomething()
+
+        public override void Execute()
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(Random.Range(0f, 3f)));
-            _controller.TransitionToPatrol();
-        }
-        public void Execute()
-        {
+            _timer += Time.deltaTime;
+            if (_timer >= _waitTime)
+            {
+                _controller.TransitionToPatrol();
+            }
         }
 
-        public void Exit()
+    }
+    public class EnemyDeactivatedState : BaseState
+    {
+        private float _waitTime;
+        private float _timer;
+        public EnemyDeactivatedState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy, playerService)
         {
+            _waitTime = enemy.Data.respawnTime;
+        }
+
+        public override void Enter()
+        {
+            _timer = 0;
+        }
+
+        public override void Execute()
+        {
+            _timer += Time.deltaTime;
+            if (_timer >= _waitTime)
+            {
+                _enemy.CanSpawn.Value = true;
+            }
         }
     }
 }

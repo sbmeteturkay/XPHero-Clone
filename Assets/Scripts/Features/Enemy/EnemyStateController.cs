@@ -1,15 +1,14 @@
 // Scripts/Feature/Enemy/EnemyStateController.cs
-using UnityEngine;
 using Zenject;
 using Game.Core.Services;
+using UnityEngine;
 
 namespace Game.Feature.Enemy
 {
-    public class EnemyStateController : MonoBehaviour, ITickable, IInitializable
+    public class EnemyStateController
     {
-        [Inject] private Enemy _enemy;
-        [Inject] private PlayerService _playerService; // Oyuncuyu bulmak için
-        [Inject] private DiContainer _container; // Durumları inject etmek için
+        private readonly Enemy _enemy;
+        private readonly PlayerService _playerService;
 
         private IEnemyState _currentState;
 
@@ -18,21 +17,25 @@ namespace Game.Feature.Enemy
         private EnemyPatrolState _patrolState;
         private EnemyChaseState _chaseState;
         private EnemyAttackState _attackState;
+        private EnemyDeactivatedState _deactivatedState;
+
+        public EnemyStateController(Enemy enemy)
+        {
+            _enemy = enemy;
+            _playerService = enemy.playerService;
+        }
 
         public bool CanChase => _enemy.CanChaseOrAttack;
-
-        void Awake()
-        {
-            // Durumları oluştur ve inject et
-            _idleState = _container.Instantiate<EnemyIdleState>();
-            _patrolState = _container.Instantiate<EnemyPatrolState>();
-            _chaseState = _container.Instantiate<EnemyChaseState>();
-            _attackState = _container.Instantiate<EnemyAttackState>();
-        }
+        public string CurrentState => _currentState.ToString();
         public void Initialize()
         {
-            // Başlangıç durumu
-            ChangeState(_idleState);
+            // Durumları oluştur ve inject et
+            _idleState = new(this,_enemy, _playerService);
+            _patrolState = new(this,_enemy, _playerService);
+            _chaseState = new(this,_enemy, _playerService);
+            _attackState = new(this,_enemy, _playerService);
+            _deactivatedState = new(this,_enemy, _playerService);
+            ChangeState(_deactivatedState);
         }
 
         //TODO: custom tick should be added
@@ -45,25 +48,43 @@ namespace Game.Feature.Enemy
         {
             _currentState?.Exit();
             _currentState = newState;
-            _currentState.Enter(this, _enemy, _playerService);
+            _currentState.Enter();
         }
 
         // Diğer durum geçiş metodları
         public void TransitionToChase()
         {
             if (CanChase)
+            {
                 ChangeState(_chaseState);
+            }
         }
-        public void TransitionToAttack() { ChangeState(_attackState); }
-        public void TransitionToIdle() { ChangeState(_idleState); }
-        public void TransitionToPatrol() { ChangeState(_patrolState); }
+
+        public void TransitionToAttack()
+        {
+            ChangeState(_attackState);
+        }
+
+        public void TransitionToIdle()
+        {
+            ChangeState(_idleState);
+        }
+
+        public void TransitionToPatrol()
+        {
+            ChangeState(_patrolState);
+        }
+        public void TransitionToDeactivate()
+        {
+            ChangeState(_deactivatedState);
+        }
 
     }
 
 
     public interface IEnemyState
     {
-        void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService);
+        void Enter();
         void Execute();
         void Exit();
         public static class AnimNames

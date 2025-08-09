@@ -31,26 +31,29 @@ namespace Game.Feature.CharacterMovement
             if (moveInput.sqrMagnitude < 0.01f)
             {
                 _model.MoveSpeed = 0;
+                _model.IsMoving.Value = false;
                 return;
             }
             _model.MoveSpeed=moveInput.magnitude*3f;
+            _model.IsMoving.Value = true;
             _model.CurrentDirection=new Vector3(moveInput.x,0,moveInput.y);
         }
         public void Tick()
         {
-            // Model'deki verilere göre View'ı güncelle
-            // _view.SetAnimation(GetAnimationState(_model.CurrentDirection));
-
             if(_model.MoveSpeed<=0)
                 return;
             // Hareket mantığı
             _view.characterController.Move(_model.CurrentDirection* _model.MoveSpeed * Time.deltaTime);
-            Quaternion targetRotation = Quaternion.LookRotation(_model.CurrentDirection);
-            _view.gameObject.transform.rotation = Quaternion.RotateTowards(
+            if (_model.canRotate)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(_model.CurrentDirection);
+                _view.gameObject.transform.rotation = Quaternion.RotateTowards(
                     _view.gameObject.transform.rotation,
-                targetRotation,
-                500* Time.deltaTime
-            );
+                    targetRotation,
+                    500* Time.deltaTime
+                );
+            }
+
         }
 
         private void Jump()

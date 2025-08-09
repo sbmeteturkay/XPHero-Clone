@@ -20,15 +20,16 @@ namespace Game.Feature.Spawn
             _spawnPoints = Object.FindObjectsByType<SpawnPoint>(sortMode: FindObjectsSortMode.None).ToList();
 
             // Düşman ölüm sinyaline abone ol
-            _signalBus.Subscribe<EnemyDiedSignal>(OnEnemyDied);
             _signalBus.Subscribe<PlayerEnteredSpawnAreaSignal>(OnPlayerEnteredSpawnArea);
             _signalBus.Subscribe<PlayerExitedSpawnAreaSignal>(OnPlayerExitedSpawnArea);
-
 
             // Başlangıçta tüm spawn noktalarından düşmanları spawn et
             foreach (var sp in _spawnPoints)
             {
-               TrySpawnEnemy(sp);
+                while (sp.MaxEnemies>sp.ActiveEnemies.Count)
+                {
+                    CreateEnemy(sp);
+                }
             }
         }
 
@@ -56,45 +57,46 @@ namespace Game.Feature.Spawn
             }
         }
 
+        public List<Enemy.Enemy> GetTargetableEnemies()
+        {
+            List<Enemy.Enemy> targetables = new List<Enemy.Enemy>();
+            foreach (SpawnPoint spawnPoint in _spawnPoints)
+            {
+                targetables.AddRange(spawnPoint.ActiveEnemies.FindAll(x=>x.Targetable));
+            }
+            return targetables;
+        } 
         public void Tick()
         {
-            // Her spawn noktasını kontrol et ve gerekirse düşman spawn et
-            foreach (var sp in _spawnPoints)
+            foreach (var spawnPoint in _spawnPoints)
             {
-                if (sp.CanSpawn)
+                if (spawnPoint.ShouldSpawnEnemy)
                 {
-                  TrySpawnEnemy(sp);
+                    TrySpawnEnemy(spawnPoint);
                 }
             }
         }
 
         private void TrySpawnEnemy(SpawnPoint spawnPoint)
         {
-            if (spawnPoint.CanSpawn && spawnPoint.EnemyToSpawn != null)
-            {
-                Enemy.Enemy newEnemy = _enemyFactory.Create(spawnPoint.EnemyToSpawn);
-                newEnemy.gameObject.transform.position = spawnPoint.GetAvailableSpawnPosition();
-                newEnemy.SetSpawnPoint(spawnPoint);
-                spawnPoint.AddActiveEnemy(newEnemy);
-            }
+            var newEnemy = spawnPoint.EnemiesToRespawn.Dequeue();
+            newEnemy.gameObject.transform.position = spawnPoint.GetAvailableSpawnPosition();
+            newEnemy.SetSpawnPoint(spawnPoint);
+            newEnemy.Respawn(spawnPoint.EnemyToSpawn);
+            spawnPoint.AddActiveEnemy(newEnemy);
         }
 
-        private void OnEnemyDied(EnemyDiedSignal signal)
+        private void CreateEnemy(SpawnPoint spawnPoint)
         {
-            // Hangi spawn noktasından geldiğini bul ve güncelle
-            foreach (var sp in _spawnPoints)
-            {
-                if (sp.ActiveEnemies.Contains(signal.Enemy))
-                {
-                    sp.EnemyDied(signal.Enemy);
-                    break;
-                }
-            }
+            var newEnemy = _enemyFactory.Create(spawnPoint.EnemyToSpawn);
+            newEnemy.gameObject.transform.position = spawnPoint.GetAvailableSpawnPosition();
+            newEnemy.SetSpawnPoint(spawnPoint);
+            spawnPoint.AddActiveEnemy(newEnemy);
         }
+
 
         public void Dispose()
         {
-            _signalBus.Unsubscribe<EnemyDiedSignal>(OnEnemyDied);
             _signalBus.Unsubscribe<PlayerEnteredSpawnAreaSignal>(OnPlayerEnteredSpawnArea);
             _signalBus.Unsubscribe<PlayerExitedSpawnAreaSignal>(OnPlayerExitedSpawnArea);
         }

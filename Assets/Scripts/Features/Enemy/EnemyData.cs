@@ -12,6 +12,7 @@ namespace Game.Feature.Enemy
         public float AttackDamage;
         public float AttackRange;
         public float AttackCooldown;
+        public float respawnTime;
         public GameObject EnemyPrefab; // Düşmanın görsel prefab'ı
         // Diğer AI veya davranış parametreleri buraya eklenebilir
     }

@@ -4,25 +4,22 @@ using Zenject;
 
 namespace Game.Feature.Enemy
 {
-    public class EnemyPatrolState : IEnemyState
+    public class EnemyPatrolState : BaseState
     {
-        [Inject] private EnemyMovement _enemyMovement;
-
-        private EnemyStateController _controller;
-        private Enemy _enemy;
-        private PlayerService _playerService;
-
+        private EnemyMovement _enemyMovement;
+        
         private Vector3[] _patrolPoints;
         private int _currentPatrolIndex = 0;
         private float _patrolWaitTime = 2f; // Her patrol noktasında bekleme süresi
         private float _waitTimer = 0f;
 
-        public void Enter(EnemyStateController controller, Enemy enemy, PlayerService playerService)
+        public EnemyPatrolState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy, playerService)
         {
-            _controller = controller;
-            _enemy = enemy;
-            _playerService = playerService;
+            _enemyMovement = enemy.EnemyMovement;
+        }
 
+        public override void Enter()
+        {
             // Patrol noktalarını belirle (örneğin, spawn noktası etrafında rastgele noktalar)
             SetupPatrolPoints();
 
@@ -30,7 +27,7 @@ namespace Game.Feature.Enemy
             MoveToNextPatrolPoint();
         }
 
-        public void Execute()
+        public override void Execute()
         {
             if (_controller.CanChase)
             {
@@ -58,7 +55,7 @@ namespace Game.Feature.Enemy
             }
         }
 
-        public void Exit()
+        public override void Exit()
         {
         }
 
@@ -66,14 +63,11 @@ namespace Game.Feature.Enemy
         private void SetupPatrolPoints()
         {
             // Spawn noktası etrafında rastgele patrol noktaları oluştur
-            Vector3 spawnPosition = _enemy.transform.position;
             _patrolPoints = new Vector3[3]; // 3 patrol noktası
 
             for (int i = 0; i < _patrolPoints.Length; i++)
             {
-                Vector3 randomDirection = Random.insideUnitSphere * 10f; // 10 birim yarıçapında
-                randomDirection.y = 0; // Y eksenini sıfırla (yatay hareket)
-                _patrolPoints[i] = spawnPosition + randomDirection;
+                _patrolPoints[i] = _enemy.GetRandomPosition();
             }
         }
 

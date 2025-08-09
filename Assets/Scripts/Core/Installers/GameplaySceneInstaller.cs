@@ -18,13 +18,8 @@ namespace Game.Core.Installer
 
             Container.Bind<DamageService>().AsSingle();
             
-            
-            Container.DeclareSignal<EnemyDiedSignal>();
             Container.DeclareSignal<EnemyTookDamageSignal>();
             Container.DeclareSignal<DamageAppliedSignal>();
-            
-            Container.BindInterfacesAndSelfTo<EnemyDetectionService>().AsSingle().NonLazy();
-            Container.BindInterfacesAndSelfTo<PlayerTargetingService>().AsSingle().NonLazy();
             
             Container.DeclareSignal<PlayerTookDamageSignal>();
             Container.DeclareSignal<PlayerDiedSignal>();
@@ -33,11 +28,6 @@ namespace Game.Core.Installer
             Container.DeclareSignal < PlayerEnteredSpawnAreaSignal>();
             Container.DeclareSignal < PlayerExitedSpawnAreaSignal>();
             
-            Container.DeclareSignal < PlayerTargetFoundSignal>();
-            Container.DeclareSignal < PlayerTargetLostSignal>();
-            
-            Container.DeclareSignal < PlayerAttackedSignal>();
-            
             SpawnEnemies();
              
              inputService.EnablePlayerInput();
@@ -45,21 +35,29 @@ namespace Game.Core.Installer
 
         private void SpawnEnemies()
         {
-            // Tüm sahnedeki SpawnPoint'lerden kullanılan benzersiz EnemyData'ları topla
-            var uniqueEnemyDatas = FindObjectsByType<SpawnPoint>(sortMode: FindObjectsSortMode.None)
+            var spawnPoints = FindObjectsByType<SpawnPoint>(sortMode: FindObjectsSortMode.None)
                 .Where(sp => sp.EnemyToSpawn != null && sp.EnemyToSpawn.EnemyPrefab != null)
-                .Select(sp => sp.EnemyToSpawn)
-                .Distinct()
+                .ToList();
+
+// EnemyData - SpawnPoint ikililerini al
+            var enemyDataWithSpawnPoints = spawnPoints
+                .Select(sp => (EnemyData: sp.EnemyToSpawn, SpawnPoint: sp))
+                .ToList();
+
+// Unique olanları almak için EnemyData’ya göre grupla
+            var uniqueEnemyDataWithSpawnPoints = enemyDataWithSpawnPoints
+                .GroupBy(x => x.EnemyData)
+                .Select(g => (EnemyData: g.Key, SpawnPoint: g.First().SpawnPoint))
                 .ToList();
 
             // Her benzersiz EnemyData'nın prefab'ı için ayrı bir Factory ve MemoryPool bind et
-            foreach (var enemyData in uniqueEnemyDatas)
+            foreach (var enemyData in uniqueEnemyDataWithSpawnPoints)
             {
                 Container.BindFactory<EnemyData, Enemy, Enemy.Factory>()
                     .FromPoolableMemoryPool(poolBinder => poolBinder
-                        .WithInitialSize(10) // Başlangıç boyutu, oyunun ihtiyacına göre ayarlanmalı
-                        .FromComponentInNewPrefab(enemyData.EnemyPrefab)
-                        .UnderTransformGroup("Enemies"));
+                        .WithInitialSize(enemyData.SpawnPoint.MaxEnemies) // Başlangıç boyutu, oyunun ihtiyacına göre ayarlanmalı
+                        .FromComponentInNewPrefab(enemyData.EnemyData.EnemyPrefab)
+                        .UnderTransform(enemyData.SpawnPoint.transform));
             }
 
             // EnemyState'leri bind et (Patrol, Chase, Attack, Idle)
