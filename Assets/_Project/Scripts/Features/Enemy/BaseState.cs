@@ -1,0 +1,28 @@
+using Game.Core.Services;
+
+namespace Game.Feature.Enemy
+{
+    public class BaseState : IEnemyState
+    {
+        protected EnemyStateController _controller;
+        protected Enemy _enemy;
+        protected PlayerService _playerService;
+
+        protected BaseState(EnemyStateController controller, Enemy enemy)
+        {
+            _controller = controller;
+            _enemy = enemy;
+        }
+        public virtual void Enter()
+        {
+        }
+
+        public virtual void Execute()
+        {
+        }
+
+        public virtual void Exit()
+        {
+        }
+    }
+}
