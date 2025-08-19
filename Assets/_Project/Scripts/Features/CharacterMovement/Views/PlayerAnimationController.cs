@@ -7,7 +7,7 @@ namespace Game.Feature.Player
         [SerializeField] private Animator Animator;
         public void CrossFade(string stateName,float duration=0.2f)
         {
-            Animator.CrossFade(stateName, 0.2f);
+            Animator.CrossFade(stateName, 0.1f);
         }
 
         public void SetBool(string propertyName,bool value)

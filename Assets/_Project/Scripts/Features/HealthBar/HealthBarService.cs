@@ -210,7 +210,6 @@ public class HealthBarService : IInitializable, ILateTickable
     {
         if (activeHealthBars.Count == 0) return;
         
-        bool anyUpdated = false;
         Vector3 cameraPos = mainCamera.transform.position;
         
         // Kompakt arrays oluştur - sadece aktif olanlar için
@@ -248,7 +247,6 @@ public class HealthBarService : IInitializable, ILateTickable
             if (instance.needsUpdate)
             {
                 instance.needsUpdate = false;
-                anyUpdated = true;
             }
         }
         

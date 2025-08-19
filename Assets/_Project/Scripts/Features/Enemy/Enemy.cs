@@ -6,6 +6,7 @@ using Game.Core.Interfaces;
 using Game.Core.Services;
 using Game.Feature.Spawn;
 using R3;
+using UI.PopupSystem;
 using UnityEngine.AI;
 
 namespace Game.Feature.Enemy
@@ -30,6 +31,7 @@ namespace Game.Feature.Enemy
         [Inject] private SignalBus _signalBus;
         [Inject] public PlayerService playerService;
         [Inject] private HealthBarService healthBarService;
+        [Inject] private PopupManager _popupManager;
         
         HealthBarData healthBar = new HealthBarData();
         
@@ -157,6 +159,7 @@ namespace Game.Feature.Enemy
             
             // Health bar'ı göstermeye başla
             shouldShowHealthBar = true;
+            _popupManager.ShowDamage(transform.position+Vector3.up*1.5f,amount.ToString(),Color.white);
             
             if (_currentHealth <= 0)
             {

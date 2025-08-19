@@ -13,7 +13,9 @@ namespace Game.Feature.CharacterMovement
         [Inject] private InputService _inputService; // Core'dan gelen bir input servisi
 
         private CompositeDisposable _disposables = new ();
-
+        private Vector3 input;
+        string horizontal = "Horizontal";
+        string vertical = "Vertical";
         public void Initialize()
         {
             _inputService.OnMoveInput
@@ -53,7 +55,24 @@ namespace Game.Feature.CharacterMovement
                     500* Time.deltaTime
                 );
             }
+        
+            // Bu input'u karakterin local space'ine çevir
+            Vector3 localInput = _view.gameObject.transform.InverseTransformDirection(_model.CurrentDirection);
+        
+            // Animatöre local değerleri ver
 
+            if (_model.CurrentDirection.magnitude > 0.1f)
+            {
+                _view.Animator.SetFloat(horizontal, localInput.x);
+                _view.Animator.SetFloat(vertical, localInput.z);
+            }
+            else
+            {
+                // Idle
+                _view.Animator.SetFloat(horizontal, 0);
+                _view.Animator.SetFloat(vertical, 0);
+            }
+                
         }
 
         private void Jump()
