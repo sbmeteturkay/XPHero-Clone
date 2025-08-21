@@ -19,6 +19,7 @@ namespace Game.Feature.Enemy
         public override void Enter()
         {
             CanAttack = true;
+            _enemy.isInteractingWithPlayer = true;
         }
 
         public override void Execute()

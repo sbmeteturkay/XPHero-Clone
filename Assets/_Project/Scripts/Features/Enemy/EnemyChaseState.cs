@@ -18,20 +18,21 @@ namespace Game.Feature.Enemy
         public override void Enter()
         {
             //animator.CrossFade(IEnemyState.AnimNames.Chase, 0.2f);
+            _enemy.isInteractingWithPlayer = true;
         }
 
         public override void Execute()
         {
-            _enemyMovement.SetDestination(_playerService.PlayerTransform.position);
-
-            if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) < _enemy.Data.AttackRange)
+            _enemyMovement.SetDestination(_playerService.GetPlayerPosition());
+            
+            if (Vector3.Distance(_enemy.transform.position, _playerService.GetPlayerPosition()) < _enemy.Data.AttackRange)
             {
                 _controller.TransitionToAttack();
             }
-            else if (Vector3.Distance(_enemy.transform.position, _playerService.PlayerTransform.position) > 4)
+            else if (Vector3.Distance(_enemy.transform.position, _playerService.GetPlayerPosition()) > 4||_enemy.DistanceFromSpawnPoint() > 10)
             {
-                //TODO: Turn back spawn area
-                _controller.TransitionToIdle();
+                _enemy.isInteractingWithPlayer = false;
+                _controller.TransitionToPatrol();
             }
         }
 

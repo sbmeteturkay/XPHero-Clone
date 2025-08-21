@@ -10,7 +10,7 @@ namespace Game.Feature.Enemy
         
         private Vector3[] _patrolPoints;
         private int _currentPatrolIndex = 0;
-        private float _patrolWaitTime = 2f; // Her patrol noktasında bekleme süresi
+        private readonly float _patrolWaitTime = 2f; // Her patrol noktasında bekleme süresi
         private float _waitTimer = 0f;
 
         public EnemyPatrolState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy)
@@ -55,6 +55,7 @@ namespace Game.Feature.Enemy
                     MoveToNextPatrolPoint();
                 }
             }
+            _enemy.Heal();
         }
 
         public override void Exit()

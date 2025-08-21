@@ -24,11 +24,11 @@ namespace Game.Feature.Player
 
         private bool _isAttacking;
         
-        public readonly ReactiveProperty<Enemy.Enemy> HasTargetEnemy = new();
+        public readonly ReactiveProperty<Enemy.Enemy> HasEnemyInRange = new();
 
         private void OnEnable()
         {
-            HasTargetEnemy.Subscribe(OnTargetEnemy);
+            HasEnemyInRange.Subscribe(OnTargetEnemy);
         }
         private void OnTargetEnemy(Enemy.Enemy enemy)
         {
@@ -42,7 +42,7 @@ namespace Game.Feature.Player
         {
             if (_targetableEnemies.Count <= 0)
             {
-                HasTargetEnemy.Value = null;
+                HasEnemyInRange.Value = null;
                 return;
             }
             
@@ -66,7 +66,7 @@ namespace Game.Feature.Player
                 }
             }
 
-            HasTargetEnemy.Value = closestEnemy;
+            HasEnemyInRange.Value = closestEnemy;
             if(closestEnemy==null)
                 return;
             float rotationSpeed = 5f; // saniyedeki dönüş hızı
@@ -86,19 +86,46 @@ namespace Game.Feature.Player
         //animation event
         private void DealDamageEvent()
         {
-            if (HasTargetEnemy.Value)
+            if (HasEnemyInRange.Value)
             {
-                PerformAttack(HasTargetEnemy.Value);
+                PerformAttack();
             }
         }
 
-        private void PerformAttack(Game.Feature.Enemy.Enemy targetEnemy)
+        private void PerformAttack()
         {
-            if (Vector3.Distance(_playerService.GetPlayerPosition(), targetEnemy.transform.position) <= _attackRange)
+            var targetsInRange = GetObjectsInCone(_targetableEnemies, 120, _attackRange);
+            foreach (var target in targetsInRange)
             {
-                _damageService.ApplyDamage(targetEnemy, _attackDamage, gameObject);
+                _damageService.ApplyDamage(target, _attackDamage, gameObject);
             }
             //Debug.Log($"Oyuncu {targetEnemy.name} hedefine { _attackDamage} hasar verdi.");
+        }
+
+        private List<Enemy.Enemy> GetObjectsInCone( List<Enemy.Enemy> allObjects, float angleRange = 60f, float maxDistance = 10f)
+        {
+            List<Enemy.Enemy> result = new ();
+
+            float cosThreshold = Mathf.Cos((angleRange * 0.5f) * Mathf.Deg2Rad); // ±30°
+
+            foreach (var obj in allObjects)
+            {
+                
+                Vector3 toObj = obj.transform.position - transform.position;
+                float dist = toObj.magnitude;
+
+                if (dist > maxDistance) continue; // range dışında
+
+                Vector3 dirToObj = toObj.normalized;
+                float dot = Vector3.Dot(transform.forward, dirToObj);
+
+                if (dot >= cosThreshold) // ±30°
+                {
+                    result.Add(obj);
+                }
+            }
+
+            return result;
         }
     }
 }

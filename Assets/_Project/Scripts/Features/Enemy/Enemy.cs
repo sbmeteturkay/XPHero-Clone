@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using UnityEngine;
 using Zenject;
 using Game.Core.Interfaces;
 using Game.Core.Services;
 using Game.Feature.Spawn;
+using PrimeTween;
 using R3;
 using UI.PopupSystem;
 using UnityEngine.AI;
@@ -13,37 +15,34 @@ namespace Game.Feature.Enemy
 {
     public class Enemy : MonoBehaviour, IDamageable, IPoolable<EnemyData, IMemoryPool>
     {
-        private bool hasHealthBarRegistered = false; // Health bar durumu
-        
-        public Animator animator;
-        [SerializeField] NavMeshAgent agent;
-        [SerializeField] SkinnedMeshRenderer skinnedMeshRenderer;
-        private MaterialPropertyBlock materialPropertyBlock;
-
-        private EnemyData _enemyData;
-        public EnemyData Data => _enemyData;
-
-        private float _currentHealth;
-        public float CurrentHealthPercent => _currentHealth / Data.MaxHealth;
-        private IMemoryPool _pool;
-        private SpawnPoint _spawnPoint;
-        
         [Inject] private SignalBus _signalBus;
         [Inject] public PlayerService playerService;
         [Inject] private HealthBarService healthBarService;
         [Inject] private PopupManager _popupManager;
         
-        HealthBarData healthBar = new HealthBarData();
+        public Animator animator;
+        [SerializeField] NavMeshAgent agent;
+        [SerializeField] SkinnedMeshRenderer skinnedMeshRenderer;
+        private MaterialPropertyBlock materialPropertyBlock;
         
         public EnemyMovement EnemyMovement; 
+        private EnemyData _enemyData;
+        public EnemyData Data => _enemyData;
+
+        private float _currentHealth;
+        private float CurrentHealthPercent => _currentHealth / Data.MaxHealth;
+        private SpawnPoint _spawnPoint;
         
         private EnemyStateController enemyStateController;
-        public bool CanChaseOrAttack => _spawnPoint.PlayerInsideSpawnPoint;
+        public bool CanChaseOrAttack => _spawnPoint.PlayerInsideSpawnPoint||isInteractingWithPlayer;
+        public bool isInteractingWithPlayer;
         public ReactiveProperty<bool> CanSpawn = new(false);
         public IDisposable CanSpawnSubscription { get; set; }
         public bool Targetable => isActiveAndEnabled && CanChaseOrAttack && _currentHealth > 0;
         
         // Health bar gösterim kontrolü
+        private readonly HealthBarData healthBar = new();
+        private bool hasHealthBarRegistered = false; // Health bar durumu
         private bool shouldShowHealthBar = false;
         private Vector3 lastPosition;
         private float lastHealthPercent;
@@ -151,23 +150,49 @@ namespace Game.Feature.Enemy
             if (_currentHealth <= 0)
                 return;
                 
-            animator.CrossFade(IEnemyState.AnimNames.GetHit, 0f);
-            Flash();
+            //animator.CrossFade(IEnemyState.AnimNames.GetHit, 0f);
             
+            Flash();
+            KnockBack();
             _currentHealth -= amount;
             healthBar.TakeDamage(amount);
             
             // Health bar'ı göstermeye başla
             shouldShowHealthBar = true;
-            _popupManager.ShowDamage(transform.position+Vector3.up*1.5f,amount.ToString(),Color.white);
+            
+            _popupManager.ShowDamage(transform.position+Vector3.up*1.5f,amount.ToString(CultureInfo.InvariantCulture),Color.white);
             
             if (_currentHealth <= 0)
             {
                 Die();
             }
         }
-        
-        public void Flash()
+
+        private void KnockBack()
+        {
+            Vector3 startPos = transform.position;
+            Vector3 hitDirection = (playerService.GetPlayerPosition() - transform.position).normalized;
+            // Hangi yöne zıplatılacağı
+            Vector3 targetPos = startPos - hitDirection.normalized * .75f;
+
+            // Hedef pozisyona git, ease-outbounce ile
+            Tween.Position(transform, targetPos, .2f, Ease.Linear, cycles: 2,
+                cycleMode: CycleMode.Yoyo);
+
+            // Y için ayrı tween: sadece yukarı zıplama ve iniş
+            Tween.LocalPositionY(transform, startPos.y + .75f, .2f / 2, Ease.Linear, cycles: 2,
+                cycleMode: CycleMode.Yoyo);
+
+        }
+
+        public void Heal()
+        {
+            _currentHealth += _enemyData.MaxHealth / 1000;
+            _currentHealth= Mathf.Clamp(_currentHealth, 0, Data.MaxHealth);
+            shouldShowHealthBar = _currentHealth < _enemyData.MaxHealth;
+        }
+
+        private void Flash()
         {
             materialPropertyBlock.SetFloat("_HitFlashAmount", .5f);
             skinnedMeshRenderer.SetPropertyBlock(materialPropertyBlock);
@@ -199,7 +224,6 @@ namespace Game.Feature.Enemy
 
         public void OnSpawned(EnemyData data, IMemoryPool pool)
         {
-            _pool = pool;
             CanSpawn.Value = false;
             _enemyData = data;
             _currentHealth = _enemyData.MaxHealth;
@@ -256,6 +280,11 @@ namespace Game.Feature.Enemy
         {
             UnregisterHealthBar();
             shouldShowHealthBar = false;
+        }
+
+        public float DistanceFromSpawnPoint()
+        {
+            return Vector3.Distance(_spawnPoint.transform.position, transform.position);
         }
         
         // Zenject MemoryPool için Factory metodu

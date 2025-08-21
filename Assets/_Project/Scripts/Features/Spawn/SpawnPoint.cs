@@ -1,10 +1,8 @@
-using System;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Feature.Enemy;
 using R3;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace Game.Feature.Spawn
@@ -94,27 +92,6 @@ namespace Game.Feature.Spawn
 
             Vector3 spawnPos = transform.position + new Vector3(x, 0f, z);
             return spawnPos;
-        }
-        
-        private void OnDrawGizmos()
-        {
-            int segments = 60;
-            Vector3 center = transform.position;
-
-            Gizmos.color = new Color(1, 1, 1, 0.3f); // Saydam beyaz
-
-            Vector3 previousPoint = center + new Vector3(radius, 0, 0);
-            for (int i = 1; i <= segments; i++)
-            {
-                float angle = i * 2 * Mathf.PI / segments;
-                Vector3 newPoint = center + new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
-
-                // Tırtıklı çizgi için segmentleri atla
-                if (i % 2 == 0)
-                    Gizmos.DrawLine(previousPoint, newPoint);
-
-                previousPoint = newPoint;
-            }
         }
     }
 }

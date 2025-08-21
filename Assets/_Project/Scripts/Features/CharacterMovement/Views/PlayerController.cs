@@ -11,10 +11,10 @@ namespace Game.Feature.Player
         [Inject] CharacterMovementModel characterMovementModel;
         [Inject] PlayerAttack playerAttack;
         [Inject] PlayerAnimationController playerAnimationController;
-        private readonly List<IDisposable> disposables = new List<IDisposable>();
+        private readonly List<IDisposable> disposables = new();
         public void Initialize()
         {
-            disposables.Add(playerAttack.HasTargetEnemy.Subscribe(PlayerAttackOnOnAttackingChanged));
+            disposables.Add(playerAttack.HasEnemyInRange.Subscribe(PlayerAttackOnOnAttackingChanged));
             disposables.Add(characterMovementModel.IsMoving.Subscribe(IsMovingVhange));
         }
 

@@ -13,6 +13,7 @@ namespace Game.Feature.Enemy
 
         public override void Enter()
         {
+            _enemy.isInteractingWithPlayer = false;
             _timer = 0;
             if(_enemy.gameObject.activeInHierarchy)
                 _enemy.animator.Play(IEnemyState.AnimNames.Die);

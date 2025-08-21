@@ -50,12 +50,12 @@ namespace Game.Feature.Spawn
 
         public List<Enemy.Enemy> GetTargetableEnemies()
         {
-            List<Enemy.Enemy> targetables = new List<Enemy.Enemy>();
-            foreach (SpawnPoint spawnPoint in _spawnPoints)
+            var targetableEnemies = new List<Enemy.Enemy>();
+            foreach (var spawnPoint in _spawnPoints)
             {
-                targetables.AddRange(spawnPoint.ActiveEnemies.FindAll(x=>x.Targetable));
+                targetableEnemies.AddRange(spawnPoint.ActiveEnemies.FindAll(x=>x.Targetable));
             }
-            return targetables;
+            return targetableEnemies;
         } 
         public void Tick()
         {
