@@ -16,3 +16,5 @@ MonoBehaviour:
   upgradeName: POWER
   description: Increase Your Power
   maxLevel: 999
+  baseValue: 4
+  basePrice: 10

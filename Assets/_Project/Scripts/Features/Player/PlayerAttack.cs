@@ -1,16 +1,14 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Zenject;
 using Game.Core.Services;
 using Game.Feature.Spawn;
-using PrimeTween;
-using R3;
+using UniRx;
 
 namespace Game.Feature.Player
 {
-    public class PlayerAttack : MonoBehaviour
+    public class PlayerAttack : IInitializable, IDisposable, ITickable
     {
         [Inject] private DamageService _damageService;
         [Inject] private SignalBus _signalBus;
@@ -19,26 +17,34 @@ namespace Game.Feature.Player
         [Inject] PlayerAnimationController playerAnimationController;
         private List<Enemy.Enemy> _targetableEnemies => spawnManager.GetTargetableEnemies();
 
-        [SerializeField] private float _attackDamage = 1f; // Oyuncunun saldırı hasarı
-        [SerializeField] private float _attackRange = 2f; // Oyuncunun saldırı menzili
+        private float _attackDamage = 1f; // Oyuncunun saldırı hasarı
+        private readonly float _attackRange = 2f; // Oyuncunun saldırı menzili
 
         private bool _isAttacking;
         
         public readonly ReactiveProperty<Enemy.Enemy> HasEnemyInRange = new();
-
-        private void OnEnable()
+        private readonly CompositeDisposable _disposables=new();
+        public void Initialize()
         {
-            HasEnemyInRange.Subscribe(OnTargetEnemy);
+            HasEnemyInRange.Subscribe(OnTargetEnemy).AddTo(_disposables);
+            _playerService.PlayerUpgradeData.Subscribe(OnUpgradeDataChanged).AddTo(_disposables);
         }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
+        }
+
+        private void OnUpgradeDataChanged(UpgradeData upgradeData)
+        {
+            _attackDamage = upgradeData.Power;
+        }
+
         private void OnTargetEnemy(Enemy.Enemy enemy)
         {
             playerAnimationController.SetBool("Attack", enemy);
-            if (!enemy)
-            {
-                return;
-            }
         }
-        void Update()
+        public void Tick()
         {
             if (_targetableEnemies.Count <= 0)
             {
@@ -70,21 +76,21 @@ namespace Game.Feature.Player
             if(closestEnemy==null)
                 return;
             float rotationSpeed = 5f; // saniyedeki dönüş hızı
-            Vector3 direction = closestEnemy.transform.position - transform.position;
+            Vector3 direction = closestEnemy.transform.position - _playerService.GetPlayerPosition();
             direction.y = 0f;
 
             if (direction.sqrMagnitude > 0.0001f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.RotateTowards(
-                    transform.rotation,
+                _playerService.PlayerTransform.rotation = Quaternion.RotateTowards(
+                    _playerService.PlayerTransform.rotation,
                     targetRotation,
                     rotationSpeed * Time.deltaTime * 60f // derece/saniye
                 );
             }
         }
         //animation event
-        private void DealDamageEvent()
+        public void DealDamageEvent()
         {
             if (HasEnemyInRange.Value)
             {
@@ -97,7 +103,7 @@ namespace Game.Feature.Player
             var targetsInRange = GetObjectsInCone(_targetableEnemies, 120, _attackRange);
             foreach (var target in targetsInRange)
             {
-                _damageService.ApplyDamage(target, _attackDamage, gameObject);
+                _damageService.ApplyDamage(target, _attackDamage, _playerService.PlayerTransform.gameObject);
             }
             //Debug.Log($"Oyuncu {targetEnemy.name} hedefine { _attackDamage} hasar verdi.");
         }
@@ -111,13 +117,13 @@ namespace Game.Feature.Player
             foreach (var obj in allObjects)
             {
                 
-                Vector3 toObj = obj.transform.position - transform.position;
+                Vector3 toObj = obj.transform.position - _playerService.GetPlayerPosition();
                 float dist = toObj.magnitude;
 
                 if (dist > maxDistance) continue; // range dışında
 
                 Vector3 dirToObj = toObj.normalized;
-                float dot = Vector3.Dot(transform.forward, dirToObj);
+                float dot = Vector3.Dot(_playerService.PlayerTransform.forward, dirToObj);
 
                 if (dot >= cosThreshold) // ±30°
                 {

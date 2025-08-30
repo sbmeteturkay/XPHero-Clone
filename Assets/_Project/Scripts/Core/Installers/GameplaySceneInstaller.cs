@@ -11,13 +11,10 @@ namespace Game.Core.Installer
     public class GameplaySceneInstaller : MonoInstaller
     {
         [Inject] InputService inputService;
-        [SerializeField] private Material healthBarMaterial;
         public override void InstallBindings()
         {
             Container.BindInterfacesAndSelfTo<PlayerService>().AsSingle().NonLazy();
             Container.BindInterfacesAndSelfTo<SpawnManager>().AsSingle().NonLazy();
-            Container.BindInterfacesAndSelfTo<HealthBarService>().AsSingle().WithArguments(healthBarMaterial).NonLazy();
-
             Container.Bind<DamageService>().AsSingle();
             
             Container.DeclareSignal<EnemyTookDamageSignal>();

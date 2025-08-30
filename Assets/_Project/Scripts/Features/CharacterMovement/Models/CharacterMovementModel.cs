@@ -1,8 +1,7 @@
 // Scripts/Feature/CharacterMovement/CharacterMovementModel.cs
 
-using System;
 using Game.Core.Framework;
-using R3;
+using UniRx;
 using UnityEngine;
 
 namespace Game.Feature.CharacterMovement

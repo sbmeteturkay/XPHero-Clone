@@ -8,12 +8,13 @@ namespace Game.Feature.CharacterMovement
     public class CharacterMovementInstaller : MonoInstaller
     {
         [SerializeField] GameObject character;
+        public CharacterController characterController;
+        public Animator Animator;
         public override void InstallBindings()
         {
             // Model, View, Controller/Presenter/ViewModel bindingleri burada yapılır
             Container.BindInterfacesAndSelfTo<CharacterMovementModel>().AsSingle();
-            Container.BindInterfacesAndSelfTo<CharacterMovementController>().AsSingle();
-            Container.Bind<CharacterMovementView>().FromComponentOn(character).AsSingle();
+            Container.BindInterfacesAndSelfTo<CharacterMovementController>().AsSingle().WithArguments(characterController,Animator,character);
             // EventBus'a abone olma gibi feature özel servisler
             // Container.Bind<CharacterMovementService>().AsSingle();
         }

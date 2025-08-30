@@ -37,6 +37,7 @@ public class UpgradeUnitUI : MonoBehaviour
 
     public void Refresh(UpgradeUnit upgrade)
     {
+        //Debug.Log(upgrade.key+": "+upgrade.GetValue().ToString());
         currentValueText.text = upgrade.GetValue().ToString();
         nextValueText.text =  upgrade.GetNextValue().ToString();
         costText.text = upgrade.GetCost().ToString();

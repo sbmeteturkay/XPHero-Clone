@@ -6,7 +6,6 @@ namespace Game.Feature.CharacterMovement
 {
     public class CharacterMovementView : MonoBehaviour
     {
-        public CharacterController characterController;
-        public Animator Animator;
+
     }
 }

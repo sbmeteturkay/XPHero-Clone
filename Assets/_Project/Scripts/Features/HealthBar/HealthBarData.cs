@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 [System.Serializable]
@@ -7,13 +8,12 @@ public class HealthBarData
     [HideInInspector] public float maxHealth;
     [HideInInspector] public float lastDamageAmount;
     float damageDisplayTimer;
-    float damageDisplayDuration = .2f;
     
     public void TakeDamage(float damage)
     {
         lastDamageAmount = damage;
         currentHealth = Mathf.Max(0, currentHealth - damage);
-        damageDisplayTimer = damageDisplayDuration;
+        damageDisplayTimer = .5f;
     }
     
     public void UpdateTimer(float deltaTime)
@@ -23,5 +23,5 @@ public class HealthBarData
     }
     
     public float GetHealthPercent() => currentHealth / maxHealth;
-    public float GetDamagePercent() => damageDisplayTimer > 0 ? lastDamageAmount / maxHealth : 0f;
+    public float GetDamagePercent() => damageDisplayTimer > 0 ? math.remap(0,.5f,0,lastDamageAmount / maxHealth,damageDisplayTimer) : 0f;
 }

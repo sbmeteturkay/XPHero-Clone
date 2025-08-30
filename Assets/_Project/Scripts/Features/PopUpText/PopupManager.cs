@@ -44,7 +44,13 @@ namespace UI.PopupSystem
             Vector3 endPos = popup.transform.position + Vector3.up * 1.5f;
 
             // Position animasyonu
-            var positionTween = Tween.Position(popup.transform, endPos, duration, Ease.Linear);
+            var positionTween = Tween.Position(popup.transform, endPos, duration, Ease.Linear).OnComplete(() =>
+            {
+                if (!isDisposed && popup != null)
+                {
+                    pool.Despawn(popup);
+                }
+            });;
 
             // Alpha animasyonu - renderer'ı cache'le
             var renderer = popup.GetComponent<Renderer>();
@@ -64,15 +70,6 @@ namespace UI.PopupSystem
                 }
                 ,Ease.InQuad
             );
-
-            // Animasyon bitince pool'a döndür
-            positionTween.OnComplete(() =>
-            {
-                if (!isDisposed && popup != null)
-                {
-                    pool.Despawn(popup);
-                }
-            });
 
             // Sadece cancellation için delay - performans için minimal
             await UniTask.Delay(

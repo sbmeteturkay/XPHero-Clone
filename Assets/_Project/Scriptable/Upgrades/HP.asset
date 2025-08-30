@@ -16,3 +16,8 @@ MonoBehaviour:
   upgradeName: HP
   description: Increase Your Health
   maxLevel: 100
+  baseValue: 50
+  basePrice: 10
+  baseRate: 1.25
+  rateIncrease: -0.01
+  periodLength: 20

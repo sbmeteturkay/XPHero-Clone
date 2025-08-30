@@ -16,3 +16,8 @@ MonoBehaviour:
   upgradeName: MOVE SPEED
   description: Increase Move Speed
   maxLevel: 35
+  baseValue: 50
+  basePrice: 100
+  baseRate: 1.05
+  rateIncrease: 0.01
+  periodLength: 5

@@ -10,14 +10,16 @@ using PrimeTween;
 using R3;
 using UI.PopupSystem;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 namespace Game.Feature.Enemy
 {
     public class Enemy : MonoBehaviour, IDamageable, IPoolable<EnemyData, IMemoryPool>
     {
         [Inject] private SignalBus _signalBus;
+        [Inject] public DamageService damageService;
         [Inject] public PlayerService playerService;
-        [Inject] private HealthBarService healthBarService;
+        [Inject] private IHealthBarRegistry healthBarService;
         [Inject] private PopupManager _popupManager;
         
         public Animator animator;
@@ -44,9 +46,6 @@ namespace Game.Feature.Enemy
         private readonly HealthBarData healthBar = new();
         private bool hasHealthBarRegistered = false; // Health bar durumu
         private bool shouldShowHealthBar = false;
-        private Vector3 lastPosition;
-        private float lastHealthPercent;
-        private float lastDamagePercent;
         
         private void Initialize()
         {
@@ -63,9 +62,6 @@ namespace Game.Feature.Enemy
             // Health bar durumunu reset et
             hasHealthBarRegistered = false;
             shouldShowHealthBar = false;
-            lastPosition = transform.position;
-            lastHealthPercent = CurrentHealthPercent;
-            lastDamagePercent = healthBar.GetDamagePercent();
         }
 
         private void Update()
@@ -79,56 +75,46 @@ namespace Game.Feature.Enemy
         
         private void HandleHealthBarDisplay()
         {
-            // Health bar gösterilmeli mi kontrol et
-            bool shouldShow = shouldShowHealthBar && _currentHealth > 0 && _currentHealth < Data.MaxHealth;
-            
-            if (shouldShow)
+            if (ShouldShowHealthBar())
             {
-                if (!hasHealthBarRegistered)
-                {
-                    // Health bar'ı register et
-                    if (healthBarService.RegisterHealthBar(
-                        gameObject,
-                        transform.position,
-                        CurrentHealthPercent,
-                        healthBar.GetDamagePercent()))
-                    {
-                        hasHealthBarRegistered = true;
-                        lastPosition = transform.position;
-                        lastHealthPercent = CurrentHealthPercent;
-                        lastDamagePercent = healthBar.GetDamagePercent();
-                    }
-                }
-                else
-                {
-                    // Health bar'ı güncelle (pozisyon veya health değiştiyse)
-                    Vector3 currentPos = transform.position;
-                    float currentHealthPercent = CurrentHealthPercent;
-                    float currentDamagePercent = healthBar.GetDamagePercent();
-                    
-                    // Sadece değişiklik varsa güncelle
-                    if (Vector3.Distance(lastPosition, currentPos) > 0.01f ||
-                        Mathf.Abs(lastHealthPercent - currentHealthPercent) > 0.001f ||
-                        Mathf.Abs(lastDamagePercent - currentDamagePercent) > 0.001f)
-                    {
-                        healthBarService.UpdateHealthBar(
-                            gameObject,
-                            currentPos,
-                            currentHealthPercent,
-                            currentDamagePercent
-                        );
-                        
-                        lastPosition = currentPos;
-                        lastHealthPercent = currentHealthPercent;
-                        lastDamagePercent = currentDamagePercent;
-                    }
-                }
+                UpdateHealthBar();
             }
             else if (hasHealthBarRegistered)
             {
-                // Health bar'ı kaldır
                 UnregisterHealthBar();
             }
+        }
+
+        private bool ShouldShowHealthBar()
+        {
+            return shouldShowHealthBar && 
+                   _currentHealth > 0 && 
+                   _currentHealth < Data.MaxHealth;
+        }
+
+        private void UpdateHealthBar()
+        {
+            Vector3 currentPosition = transform.position;
+            float currentHealthPercent = healthBar.GetHealthPercent();
+            float currentDamagePercent = healthBar.GetDamagePercent();
+            if (!hasHealthBarRegistered)
+            {
+                RegisterHealthBar(currentPosition, currentHealthPercent, currentDamagePercent);
+            }
+            UpdateHealthBarPositionAndValues(currentPosition, currentHealthPercent, currentDamagePercent);
+        }
+
+        private void RegisterHealthBar(Vector3 position, float healthPercent, float damagePercent)
+        {
+            if (healthBarService.RegisterHealthBar(gameObject, position, healthPercent, damagePercent))
+            {
+                hasHealthBarRegistered = true;
+            }
+        }
+        
+        private void UpdateHealthBarPositionAndValues(Vector3 position, float healthPercent, float damagePercent)
+        {
+            healthBarService.UpdateHealthBar(gameObject, position, healthPercent, damagePercent);
         }
         
         private void UnregisterHealthBar()
@@ -161,8 +147,7 @@ namespace Game.Feature.Enemy
             shouldShowHealthBar = true;
             
             _popupManager.ShowDamage(transform.position+Vector3.up*1.5f,amount.ToString(CultureInfo.InvariantCulture),Color.white);
-            
-            if (_currentHealth <= 0)
+            if (_currentHealth <= 1)
             {
                 Die();
             }
@@ -176,13 +161,11 @@ namespace Game.Feature.Enemy
             Vector3 targetPos = startPos - hitDirection.normalized * .75f;
 
             // Hedef pozisyona git, ease-outbounce ile
-            Tween.Position(transform, targetPos, .2f, Ease.Linear, cycles: 2,
-                cycleMode: CycleMode.Yoyo);
+            Tween.Position(transform, targetPos, .2f, (Ease)Random.Range(1,31));
 
             // Y için ayrı tween: sadece yukarı zıplama ve iniş
             Tween.LocalPositionY(transform, startPos.y + .75f, .2f / 2, Ease.Linear, cycles: 2,
                 cycleMode: CycleMode.Yoyo);
-
         }
 
         public void Heal()
@@ -190,6 +173,7 @@ namespace Game.Feature.Enemy
             _currentHealth += _enemyData.MaxHealth / 1000;
             _currentHealth= Mathf.Clamp(_currentHealth, 0, Data.MaxHealth);
             shouldShowHealthBar = _currentHealth < _enemyData.MaxHealth;
+            healthBar.currentHealth = _currentHealth;
         }
 
         private void Flash()
@@ -245,11 +229,6 @@ namespace Game.Feature.Enemy
             gameObject.SetActive(true);
             enemyStateController.TransitionToIdle();
             agent.enabled = true;
-            
-            // Health bar verilerini güncelle
-            lastPosition = transform.position;
-            lastHealthPercent = CurrentHealthPercent;
-            lastDamagePercent = healthBar.GetDamagePercent();
         }
 
         public void OnDespawned()

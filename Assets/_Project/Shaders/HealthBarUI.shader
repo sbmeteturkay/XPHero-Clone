@@ -32,8 +32,6 @@ Shader "Custom/HealthBar"
             #pragma fragment frag
             #pragma multi_compile_instancing
 
-            #include <HLSLSupport.cginc>
-
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             
             struct Attributes
@@ -96,36 +94,44 @@ Shader "Custom/HealthBar"
                 half4 finalColor = half4(0, 0, 0, 0);
                 
                 // Rounded rectangle parameters
-                float2 size = float2(0.4, 0.3); // Health bar inner size
+                float2 size = float2(0.4, 0.3);
                 float bgRadius = _BorderRadius;
                 
-                // Background (siyah rounded rectangle)
-                float bgDist = roundedRectSDF(uv, size, bgRadius); // Inner area'yı kaplasın
+                // Background rounded rectangle
+                float bgDist = roundedRectSDF(uv, size, bgRadius);
                 float bgAlpha = 1.0 - smoothstep(-0.01, 0.01, bgDist);
                 finalColor = lerp(finalColor, _BackgroundColor, bgAlpha);
                 
-                // Inner area
-                float innerDist = roundedRectSDF(uv, size, bgRadius);
+                // Inner health bar area - padding ekleyerek kenarlardan uzak tutalım
+                float2 innerSize = size - float2(_BorderWidth * 2, _BorderWidth * 2);
+                float innerRadius = max(0.0, bgRadius - _BorderWidth);
+                float innerDist = roundedRectSDF(uv, innerSize, innerRadius);
                 float innerMask = 1.0 - smoothstep(-0.01, 0.01, innerDist);
                 
                 if (innerMask > 0.5)
                 {
-                    // İlk önce tüm inner area'yı background color ile doldur
-                    fixed4 barColor = _BackgroundColor;
+                    // Inner area'da UV koordinatlarını normalize et (0-1 arası)
+                    float2 center = float2(0.5, 0.5);
+                    float2 innerUV = (uv - center) / (innerSize * 2.0) + 0.5;
                     
-                    // Health bar (kırmızı) - background'un üzerine
-                    float healthWidth = healthPercent;
-                    float healthMask = step(uv.x, healthWidth);
-                    barColor = lerp(barColor, _HealthColor, healthMask);
-                    
-                    // Damage bar (beyaz) - health bar'ın üzerine
-                    float damageStart = healthPercent;
-                    float damageEnd = min(1.0, healthPercent + damagePercent);
-                    float damageMask = step(damageStart, uv.x) * step(uv.x, damageEnd);
-                    barColor = lerp(barColor, _DamageColor, damageMask);
-                    
-                    // Final color'u inner mask ile blend et
-                    finalColor = lerp(finalColor, barColor, innerMask);
+                    // Sadece inner area içindeki UV'leri kullan
+                    if (innerUV.x >= 0.0 && innerUV.x <= 1.0 && innerUV.y >= 0.0 && innerUV.y <= 1.0)
+                    {
+                        // Başlangıçta background color
+                        half4 barColor = _BackgroundColor;
+                        
+                        // Health bar (kırmızı)
+                        float healthMask = step(innerUV.x, healthPercent);
+                        barColor = lerp(barColor, _HealthColor, healthMask);
+                        
+                        // Damage bar (beyaz) - health'in hemen yanından başlar
+                        float damageStart = healthPercent;
+                        float damageEnd = min(1.0, healthPercent + damagePercent);
+                        float damageMask = step(damageStart, innerUV.x) * (1.0 - step(damageEnd, innerUV.x));
+                        barColor = lerp(barColor, _DamageColor, damageMask);
+                        
+                        finalColor = lerp(finalColor, barColor, innerMask);
+                    }
                 }
                                 
                 return finalColor;

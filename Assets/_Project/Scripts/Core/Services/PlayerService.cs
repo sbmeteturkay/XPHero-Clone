@@ -1,15 +1,20 @@
+using System;
 using Game.Core.Interfaces;
+using Game.Feature.Player;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
 namespace Game.Core.Services
 {
-    public class PlayerService : IInitializable
+    public class PlayerService : IInitializable, IDisposable
     {
         // Oyuncunun Transform'unu tutacak ReactiveProperty veya doğrudan Transform
         // ReactiveProperty kullanmak, oyuncu transform'u değiştiğinde (örneğin sahne değişimi) diğer sistemlerin haberdar olmasını sağlar.
         public Transform PlayerTransform { get; private set; }
-        public IDamageable PlayerDamageable { get; private set; }
+        public IDamageable PlayerDamageable;
+        [Inject] public ReactiveProperty<UpgradeData> PlayerUpgradeData;
+
 
         // Oyuncunun GameObject'ini veya diğer bileşenlerini de tutabiliriz.
         // public GameObject PlayerGameObject { get; private set; }
@@ -28,13 +33,18 @@ namespace Game.Core.Services
             {
                 Debug.LogWarning("PlayerService: Oyuncu GameObject bulunamadı! Lütfen oyuncunuza 'Player' tag'ini ekleyin.");
             }
-            PlayerDamageable = PlayerTransform.GetComponent<IDamageable>();
+
         }
 
         // Oyuncunun pozisyonunu, sağlığını vb. almak için metodlar eklenebilir.
         public Vector3 GetPlayerPosition()
         {
             return PlayerTransform != null ? PlayerTransform.position : Vector3.zero;
+        }
+
+        public void Dispose()
+        {
+            PlayerUpgradeData?.Dispose();
         }
     }
 }

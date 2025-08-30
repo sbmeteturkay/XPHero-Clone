@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Feature.CharacterMovement;
-using R3;
+using UniRx;
 using Zenject;
 
 namespace Game.Feature.Player

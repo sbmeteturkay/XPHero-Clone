@@ -6,7 +6,6 @@ namespace Game.Feature.Enemy
 {
     public class EnemyAttackState : BaseState
     {
-
         private float _attackCooldownTimer;
         public bool CanAttack { get; set; }
         public EnemyAttackState(EnemyStateController controller, Enemy enemy, PlayerService playerService) : base(controller, enemy)
@@ -47,7 +46,8 @@ namespace Game.Feature.Enemy
         private void PerformAttack()
         {
             _enemy.animator.CrossFade(IEnemyState.AnimNames.Attack, 0f);
-            //_damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
+            _enemy.damageService.ApplyDamage(_playerService.PlayerDamageable, _enemy.Data.AttackDamage, _enemy.gameObject);
+            _attackCooldownTimer = _enemy.Data.AttackCooldown;
             //Debug.Log($"{_enemy.Data.EnemyName} oyuncuya { _enemy.Data.AttackDamage} hasar verdi.");
         }
         void RotateToTarget(Transform target)

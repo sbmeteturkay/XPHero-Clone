@@ -1,14 +1,28 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UniRx;
+using Zenject;
 
-
+public class UpgradeData
+{
+    public int Power=>PlayerPrefs.GetInt("Upgrade_POWER_Value");
+    public int CargoCapacity;
+    public int HP=>PlayerPrefs.GetInt("Upgrade_HP_Value");
+    public int HPRecovery;
+    public int MoveSpeed=>PlayerPrefs.GetInt("Upgrade_MOVE SPEED_Value");
+    public float CritChange;
+    public float AttackSpeed;
+    public float DoubleAttackChange;
+    public float TripleAttack;
+}
 public class UpgradeManager : MonoBehaviour
 {
     [SerializeField] private UpgradeUnitUI upgradePrefab;
     [SerializeField] private Transform contentParent;
     [SerializeField] private List<UpgradeSO> upgrades;
-    Dictionary<UpgradeUnitUI, UpgradeUnit> upgradesDict = new Dictionary<UpgradeUnitUI, UpgradeUnit>();
-    
+    private readonly Dictionary<UpgradeUnitUI, UpgradeUnit> upgradesDict = new();
+    [Inject] public ReactiveProperty<UpgradeData> PlayerUpgradeData;
+
     private void Awake()
     {
         LoadUpgrades();
@@ -19,62 +33,98 @@ public class UpgradeManager : MonoBehaviour
         foreach (var upgrade in upgrades)
         {
             string key = "Upgrade_" + upgrade.upgradeName;
-            var ui = Instantiate(upgradePrefab, contentParent);
-            ui.SetData(upgrade);
-            ui.onButtonClicked = () =>
+            var upgradeUnitUI = Instantiate(upgradePrefab, contentParent);
+            upgradeUnitUI.SetData(upgrade);
+            upgradeUnitUI.onButtonClicked = () =>
             {
-                TryUpgrade(ui);
+                TryUpgrade(upgradeUnitUI);
             };
-            var unit = new UpgradeUnit(0);
+            var unit = new UpgradeUnit(key,upgrade);
             
-            upgradesDict.Add(ui,unit);
-            ui.Refresh(unit);
+            upgradesDict.Add(upgradeUnitUI,unit);
+            upgradeUnitUI.Refresh(unit);
         }
     }
 
-    void TryUpgrade(UpgradeUnitUI key)
+    void TryUpgrade(UpgradeUnitUI upgradeUnitUI)
     {
-        var upgrade = upgradesDict[key];
+        var upgrade = upgradesDict[upgradeUnitUI];
         var canBuy = true;
         if (canBuy)
         {
-            upgrade.level++;
+            upgrade.Upgrade();
+            PlayerUpgradeData.SetValueAndForceNotify(PlayerUpgradeData.Value);
         }
-        key.Refresh(upgrade);
-    }
-
-    private int UpgradeCostValueRefresh()
-    {
-        return (int)UpgradeFormulas.Logarithmic(1, 1,2,2);
-    }
-
-    private int UpgradeCostRefresh()
-    {
-        return (int)UpgradeFormulas.Constant(1, 1);
+        upgradeUnitUI.Refresh(upgrade);
     }
 }
 
 public class UpgradeUnit
 {
     public int level;
+    public string key;
+    private float baseValue;
+    private int basePrice;
+    
+    private float baseRate;
+    private float baseRateIncrease;
+    private int periodLenght;
 
-    public UpgradeUnit(int level)
+    public UpgradeUnit(string key, UpgradeSO upgrade)
     {
-        this.level = level;
+        baseValue = upgrade.baseValue;
+        basePrice = upgrade.basePrice;
+        baseRate= upgrade.baseRate;
+        baseRateIncrease= upgrade.rateIncrease;
+        periodLenght=upgrade.periodLength;
+        
+        if(!PlayerPrefs.HasKey(key)){
+            PlayerPrefs.SetInt(key,1);
+            PlayerPrefs.Save();
+        }
+        level = PlayerPrefs.GetInt(key);
+        PlayerPrefs.SetInt(key+"_Value",GetValue());
+        this.key = key;
+
     }
 
+    public void Upgrade()
+    {
+        level++;
+        PlayerPrefs.SetInt(key, level);
+        PlayerPrefs.SetInt(key+"_Value",GetValue());
+        PlayerPrefs.Save();
+    }
     public int GetValue()
     {
-        return (int)UpgradeFormulas.Linear(level, 1, 1, level);
+        return (int)UpgradeFormulas.ExponentialPiecewise(
+            upgradeLevel: level,
+            baseValue: baseValue,
+            baseRate: baseRate,
+            rateIncrease: baseRateIncrease,
+            periodLength: periodLenght
+        );
     }
 
     public int GetNextValue()
     {
-        return (int)UpgradeFormulas.Linear(level, 1, 1, level+1);
+        return (int)UpgradeFormulas.ExponentialPiecewise(
+            upgradeLevel: level+1,
+            baseValue: baseValue,
+            baseRate: baseRate,
+            rateIncrease: baseRateIncrease,
+            periodLength: periodLenght
+        );
     }
 
     public int GetCost()
     {
-        return (int)UpgradeFormulas.Linear(level,1,1,1);
+        return (int)UpgradeFormulas.ExponentialPiecewise(
+            upgradeLevel: level,
+            baseValue: basePrice,
+            baseRate: 1.15f,
+            rateIncrease: 0.01f,
+            periodLength: 20
+        );
     }
 }
