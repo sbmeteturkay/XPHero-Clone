@@ -48,14 +48,18 @@ public class Scenes : EditorWindow
                 d = f.DirectoryName;
                 var label = f.DirectoryName.Replace(Application.dataPath.Replace("/", "\\") + "\\", "");
                 bool show = !_folds.ContainsKey(d) ? false : _folds[d];
-                _folds[d] = EditorGUILayout.Foldout(show, label);
+                _folds[d] = EditorGUILayout.Foldout(true, label);
             }
             
             if (_folds[d])
             {
                 if (GUILayout.Button(f.Name.Replace(".unity", ""), GUILayout.MaxWidth(170), GUILayout.MaxHeight(20)))
                 {
-                    EditorSceneManager.OpenScene(f.FullName);
+                    if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                    {
+                        // Kullanıcı "Save" veya "Don't Save" dediyse, yeni sahneyi aç
+                        EditorSceneManager.OpenScene(f.FullName);
+                    }
                 }
             }
         }
@@ -64,7 +68,7 @@ public class Scenes : EditorWindow
 
     FileInfo[] GetScenes()
     {
-        DirectoryInfo directory = new DirectoryInfo(Application.dataPath);
+        DirectoryInfo directory = new DirectoryInfo(Application.dataPath.Replace("/Assets", "/Assets/_Project"));
         _files = directory.GetFiles("*.unity", SearchOption.AllDirectories);
         System.Array.Sort(_files, delegate(FileInfo f1, FileInfo f2)
         {

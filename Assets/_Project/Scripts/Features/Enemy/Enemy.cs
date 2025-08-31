@@ -1,14 +1,14 @@
 using System;
-using System.Collections;
 using System.Globalization;
 using UnityEngine;
 using Zenject;
 using Game.Core.Interfaces;
 using Game.Core.Services;
 using Game.Feature.Spawn;
+using Game.Feature.UI;
 using PrimeTween;
-using R3;
 using UI.PopupSystem;
+using UniRx;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
@@ -31,21 +31,18 @@ namespace Game.Feature.Enemy
         private EnemyData _enemyData;
         public EnemyData Data => _enemyData;
 
-        private float _currentHealth;
-        private float CurrentHealthPercent => _currentHealth / Data.MaxHealth;
+        private readonly ReactiveProperty<float> _currentHealth=new();
         private SpawnPoint _spawnPoint;
         
         private EnemyStateController enemyStateController;
         public bool CanChaseOrAttack => _spawnPoint.PlayerInsideSpawnPoint||isInteractingWithPlayer;
         public bool isInteractingWithPlayer;
-        public ReactiveProperty<bool> CanSpawn = new(false);
+        public readonly ReactiveProperty<bool> CanSpawn = new(false);
         public IDisposable CanSpawnSubscription { get; set; }
-        public bool Targetable => isActiveAndEnabled && CanChaseOrAttack && _currentHealth > 0;
+        public bool Targetable => isActiveAndEnabled && CanChaseOrAttack && _currentHealth.Value > 0;
         
         // Health bar gösterim kontrolü
-        private readonly HealthBarData healthBar = new();
-        private bool hasHealthBarRegistered = false; // Health bar durumu
-        private bool shouldShowHealthBar = false;
+        private HealthBarController _healthBarController;
         
         private void Initialize()
         {
@@ -55,77 +52,19 @@ namespace Game.Feature.Enemy
             materialPropertyBlock = new();
             skinnedMeshRenderer.GetPropertyBlock(materialPropertyBlock);
             
-            // Health'i initialize et
-            healthBar.maxHealth = Data.MaxHealth;
-            healthBar.currentHealth = _currentHealth;
-            
             // Health bar durumunu reset et
-            hasHealthBarRegistered = false;
-            shouldShowHealthBar = false;
+            _healthBarController = new HealthBarController(healthBarService,transform,
+                _currentHealth, 
+                new ReactiveProperty<float>(Data.MaxHealth),
+                ()=>_currentHealth.Value > 1 && _currentHealth.Value < Data.MaxHealth);
         }
 
         private void Update()
         {
             enemyStateController.Tick();
-            healthBar.UpdateTimer(Time.deltaTime);
-            
-            // Health bar yönetimi
-            HandleHealthBarDisplay();
+            _healthBarController.Tick();
         }
         
-        private void HandleHealthBarDisplay()
-        {
-            if (ShouldShowHealthBar())
-            {
-                UpdateHealthBar();
-            }
-            else if (hasHealthBarRegistered)
-            {
-                UnregisterHealthBar();
-            }
-        }
-
-        private bool ShouldShowHealthBar()
-        {
-            return shouldShowHealthBar && 
-                   _currentHealth > 0 && 
-                   _currentHealth < Data.MaxHealth;
-        }
-
-        private void UpdateHealthBar()
-        {
-            Vector3 currentPosition = transform.position;
-            float currentHealthPercent = healthBar.GetHealthPercent();
-            float currentDamagePercent = healthBar.GetDamagePercent();
-            if (!hasHealthBarRegistered)
-            {
-                RegisterHealthBar(currentPosition, currentHealthPercent, currentDamagePercent);
-            }
-            UpdateHealthBarPositionAndValues(currentPosition, currentHealthPercent, currentDamagePercent);
-        }
-
-        private void RegisterHealthBar(Vector3 position, float healthPercent, float damagePercent)
-        {
-            if (healthBarService.RegisterHealthBar(gameObject, position, healthPercent, damagePercent))
-            {
-                hasHealthBarRegistered = true;
-            }
-        }
-        
-        private void UpdateHealthBarPositionAndValues(Vector3 position, float healthPercent, float damagePercent)
-        {
-            healthBarService.UpdateHealthBar(gameObject, position, healthPercent, damagePercent);
-        }
-        
-        private void UnregisterHealthBar()
-        {
-            if (hasHealthBarRegistered)
-            {
-                healthBarService.UnregisterHealthBar(gameObject);
-                hasHealthBarRegistered = false;
-            }
-        }
-
         public void UpdateWhileDeactivated()
         {
             enemyStateController.Tick();
@@ -133,21 +72,17 @@ namespace Game.Feature.Enemy
         
         public void TakeDamage(float amount, GameObject instigator = null)
         {
-            if (_currentHealth <= 0)
+            if (_currentHealth.Value <= 0)
                 return;
                 
             //animator.CrossFade(IEnemyState.AnimNames.GetHit, 0f);
             
             Flash();
             KnockBack();
-            _currentHealth -= amount;
-            healthBar.TakeDamage(amount);
-            
-            // Health bar'ı göstermeye başla
-            shouldShowHealthBar = true;
+            _currentHealth.Value -= amount;
             
             _popupManager.ShowDamage(transform.position+Vector3.up*1.5f,amount.ToString(CultureInfo.InvariantCulture),Color.white);
-            if (_currentHealth <= 1)
+            if (_currentHealth.Value <= 1)
             {
                 Die();
             }
@@ -170,38 +105,24 @@ namespace Game.Feature.Enemy
 
         public void Heal()
         {
-            _currentHealth += _enemyData.MaxHealth / 1000;
-            _currentHealth= Mathf.Clamp(_currentHealth, 0, Data.MaxHealth);
-            shouldShowHealthBar = _currentHealth < _enemyData.MaxHealth;
-            healthBar.currentHealth = _currentHealth;
+            _currentHealth.Value= Mathf.Clamp(_currentHealth.Value+(_enemyData.MaxHealth / 1000), 0, Data.MaxHealth);
         }
 
         private void Flash()
         {
-            materialPropertyBlock.SetFloat("_HitFlashAmount", .5f);
-            skinnedMeshRenderer.SetPropertyBlock(materialPropertyBlock);
-            StartCoroutine(FlashRoutine());
-        }
+            Color startColor = Color.white*1.5f; // parlaklık başlangıcı
+            Color endColor = Color.black;        // sona erme
 
-        private IEnumerator FlashRoutine()
-        {
-            float t = 0f;
-            while (t < 0.2f)
+            Tween.Custom(startColor, endColor, 0.4f, ( val) =>
             {
-                t += Time.deltaTime;
-                float amount = Mathf.Lerp(1f, 0f, t / 0.2f);
-                materialPropertyBlock.SetFloat("_HitFlashAmount", amount);
+                materialPropertyBlock.SetColor("_EmissionColor", val);
                 skinnedMeshRenderer.SetPropertyBlock(materialPropertyBlock);
-                yield return null;
-            }
+            });
         }
 
         private void Die()
         {
             // Health bar'ı hemen kaldır
-            UnregisterHealthBar();
-            shouldShowHealthBar = false;
-            
             _spawnPoint.EnemyDied(this);
             enemyStateController.TransitionToDeactivate();
         }
@@ -210,7 +131,7 @@ namespace Game.Feature.Enemy
         {
             CanSpawn.Value = false;
             _enemyData = data;
-            _currentHealth = _enemyData.MaxHealth;
+            _currentHealth.Value = Data.MaxHealth;
             gameObject.SetActive(false);
             Initialize();
         }
@@ -219,13 +140,7 @@ namespace Game.Feature.Enemy
         {
             CanSpawn.Value = false;
             _enemyData = data;
-            _currentHealth = _enemyData.MaxHealth;
-            healthBar.currentHealth = _currentHealth;
-            
-            // Health bar durumunu reset et
-            shouldShowHealthBar = false;
-            UnregisterHealthBar();
-            
+            _currentHealth.Value = Data.MaxHealth;
             gameObject.SetActive(true);
             enemyStateController.TransitionToIdle();
             agent.enabled = true;
@@ -233,9 +148,6 @@ namespace Game.Feature.Enemy
 
         public void OnDespawned()
         {
-            // Pool'a dönerken health bar'ı temizle
-            UnregisterHealthBar();
-            shouldShowHealthBar = false;
         }
 
         public void SetSpawnPoint(SpawnPoint spawnPoint)
@@ -246,19 +158,6 @@ namespace Game.Feature.Enemy
         public Vector3 GetRandomPosition()
         {
             return _spawnPoint.GetRandomPositionInRadius();
-        }
-        
-        // Component destroy olurken health bar'ı temizle
-        private void OnDestroy()
-        {
-            UnregisterHealthBar();
-        }
-        
-        // GameObject deaktif olurken health bar'ı temizle
-        private void OnDisable()
-        {
-            UnregisterHealthBar();
-            shouldShowHealthBar = false;
         }
 
         public float DistanceFromSpawnPoint()

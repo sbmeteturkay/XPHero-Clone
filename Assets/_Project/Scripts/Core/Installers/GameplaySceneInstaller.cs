@@ -13,9 +13,12 @@ namespace Game.Core.Installer
         [Inject] InputService inputService;
         public override void InstallBindings()
         {
-            Container.BindInterfacesAndSelfTo<PlayerService>().AsSingle().NonLazy();
+            Debug.Log("player service binded");
+            Container.BindInterfacesAndSelfTo<PlayerService>().AsSingle();
             Container.BindInterfacesAndSelfTo<SpawnManager>().AsSingle().NonLazy();
             Container.Bind<DamageService>().AsSingle();
+            
+            //events
             
             Container.DeclareSignal<EnemyTookDamageSignal>();
             Container.DeclareSignal<DamageAppliedSignal>();

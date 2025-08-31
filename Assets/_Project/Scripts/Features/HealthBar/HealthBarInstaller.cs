@@ -1,3 +1,4 @@
+using Game.Feature.UI;
 using UnityEngine;
 using Zenject;
 // Zenject Installer

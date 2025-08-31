@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using Game.Feature.Enemy;
-using R3;
 using Random = UnityEngine.Random;
+using UniRx;
 
 namespace Game.Feature.Spawn
 {

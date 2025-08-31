@@ -1,30 +1,47 @@
-// Scripts/Feature/Player/PlayerHealth.cs
-
 using System;
 using UnityEngine;
 using Zenject;
 using Game.Core.Interfaces;
 using Game.Core.Services;
 using UniRx;
+using Game.Feature.UI;
 
 namespace Game.Feature.Player
 {
-    public class PlayerHealth :  IDamageable, IInitializable
+    public class PlayerHealth : IDamageable, IInitializable, ITickable, IDisposable
     {
         [Inject] private SignalBus _signalBus;
         [Inject] private PlayerService playerService;
+        [Inject]private IHealthBarRegistry _healthBarRegistry;
+        
+        private readonly ReactiveProperty<float> _maxHealth = new(100f);
+        private readonly ReactiveProperty<float> _currentHealth = new(100f);
+        private HealthBarController _healthBarController;
 
-        private float _maxHealth = 100f;
-        private float _currentHealth=100f;
+        public void Initialize()
+        {
+            playerService.SetPlayerHealth(this);
+            playerService.PlayerUpgradeData.Subscribe(OnUpgradeDataChanged);
+            OnUpgradeDataChanged(playerService.PlayerUpgradeData.Value);
+            _currentHealth.Value = _maxHealth.Value;
+            _healthBarController = new HealthBarController(_healthBarRegistry, playerService.PlayerTransform,
+                _currentHealth, _maxHealth, () => _currentHealth.Value < _maxHealth.Value);
+        }
+
+        public void Tick()
+        {
+            _healthBarController.Tick();
+        }
 
         public void TakeDamage(float amount, GameObject instigator = null)
         {
-            _currentHealth -= amount;
-            //Debug.Log($"Oyuncu hasar aldı: {amount}. Kalan sağlık: {_currentHealth}");
+            _currentHealth.Value -= amount;
+            
+            //Debug.Log($"Oyuncu hasar aldı: {amount}. Kalan sağlık: {_currentHealth.Value}");
 
             //_signalBus.Fire(new PlayerTookDamageSignal { Player = this, DamageAmount = amount, Instigator = instigator });
 
-            if (_currentHealth <= 0)
+            if (_currentHealth.Value <= 0)
             {
                 Die();
             }
@@ -38,21 +55,21 @@ namespace Game.Feature.Player
 
         public void Heal(float amount)
         {
-            _currentHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
-            Debug.Log($"Oyuncu iyileşti: {amount}. Yeni sağlık: {_currentHealth}");
+            _currentHealth.Value = Mathf.Min(_currentHealth.Value + amount, _maxHealth.Value);
+            Debug.Log($"Oyuncu iyileşti: {amount}. Yeni sağlık: {_currentHealth.Value}");
             _signalBus.Fire(new PlayerHealedSignal { Player = this, HealAmount = amount });
         }
 
-        public void Initialize()
-        {
-            playerService.PlayerDamageable = this;
-            playerService.PlayerUpgradeData.Subscribe(OnUpgradeDataChanged);
-            OnUpgradeDataChanged(playerService.PlayerUpgradeData.Value);
-            _currentHealth = _maxHealth;
-        }
         private void OnUpgradeDataChanged(UpgradeData upgradeData)
         {
-           _maxHealth = upgradeData.HP;
+           _maxHealth.Value = upgradeData.HP;
+        }
+
+        public void Dispose()
+        {
+            playerService?.Dispose();
+            _maxHealth?.Dispose();
+            _currentHealth?.Dispose();
         }
     }
 
@@ -61,3 +78,4 @@ namespace Game.Feature.Player
     public class PlayerDiedSignal { public PlayerHealth Player; }
     public class PlayerHealedSignal { public PlayerHealth Player; public float HealAmount; }
 }
+

@@ -11,9 +11,11 @@ namespace Game.Core.Services
     {
         // Oyuncunun Transform'unu tutacak ReactiveProperty veya doğrudan Transform
         // ReactiveProperty kullanmak, oyuncu transform'u değiştiğinde (örneğin sahne değişimi) diğer sistemlerin haberdar olmasını sağlar.
-        public Transform PlayerTransform { get; private set; }
-        public IDamageable PlayerDamageable;
         [Inject] public ReactiveProperty<UpgradeData> PlayerUpgradeData;
+        public PlayerHealth  playerHealth;
+        public Transform PlayerTransform { get; private set; }
+        public IDamageable PlayerDamageable=>playerHealth;
+
 
 
         // Oyuncunun GameObject'ini veya diğer bileşenlerini de tutabiliriz.
@@ -34,6 +36,11 @@ namespace Game.Core.Services
                 Debug.LogWarning("PlayerService: Oyuncu GameObject bulunamadı! Lütfen oyuncunuza 'Player' tag'ini ekleyin.");
             }
 
+        }
+
+        public void SetPlayerHealth(PlayerHealth playerHealth)
+        {
+            this.playerHealth = playerHealth;
         }
 
         // Oyuncunun pozisyonunu, sağlığını vb. almak için metodlar eklenebilir.

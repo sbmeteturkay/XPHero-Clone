@@ -1,4 +1,4 @@
-using System;
+using UnityEngine;
 using Zenject;
 
 namespace Game.Feature.Player
@@ -11,6 +11,7 @@ namespace Game.Feature.Player
         {
             Container.Bind<PlayerAnimationController>().FromComponentInHierarchy().AsSingle(); 
             Container.BindInterfacesAndSelfTo<PlayerAttack>().AsSingle();
+            Debug.Log("PlayerHealth service binded");
             Container.BindInterfacesAndSelfTo<PlayerHealth>().AsSingle();
             Container.BindInterfacesAndSelfTo<PlayerController>().AsSingle().NonLazy();
         }

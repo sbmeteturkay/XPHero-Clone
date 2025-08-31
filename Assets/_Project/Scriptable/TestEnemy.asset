@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TestEnemy
   m_EditorClassIdentifier: 
   EnemyName: Test
-  MaxHealth: 40
+  MaxHealth: 100
   MoveSpeed: 2
   AttackDamage: 4
   AttackRange: 2
