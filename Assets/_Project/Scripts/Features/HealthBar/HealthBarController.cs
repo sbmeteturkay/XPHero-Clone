@@ -25,6 +25,7 @@ namespace Game.Feature.UI
         public void Tick()
         {
             HandleHealthBarDisplay();
+            _healthBarData.UpdateTimer(Time.deltaTime);
         }
 
         public bool ShouldShowHealthBar()
@@ -39,6 +40,10 @@ namespace Game.Feature.UI
 
         void SetCurrentHealth(float health)
         {
+            if (_healthBarData.currentHealth>health)
+            {
+                _healthBarData.TakeDamage(_healthBarData.currentHealth-health);
+            }
             _healthBarData.currentHealth = health;
             UpdateHealthBarValues();
         }

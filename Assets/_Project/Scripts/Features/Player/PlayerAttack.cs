@@ -18,6 +18,7 @@ namespace Game.Feature.Player
         private List<Enemy.Enemy> _targetableEnemies => spawnManager.GetTargetableEnemies();
 
         private float _attackDamage = 1f; // Oyuncunun saldırı hasarı
+        private float _attackSpeed = 1f; // Oyuncunun saldırı hızı
         private readonly float _attackRange = 2f; // Oyuncunun saldırı menzili
 
         private bool _isAttacking;
@@ -38,6 +39,8 @@ namespace Game.Feature.Player
         private void OnUpgradeDataChanged(UpgradeData upgradeData)
         {
             _attackDamage = upgradeData.Power;
+            _attackSpeed = upgradeData.AttackSpeed*0.01f;
+            playerAnimationController.SetFloat("AttackSpeed", _attackSpeed);
         }
 
         private void OnTargetEnemy(Enemy.Enemy enemy)

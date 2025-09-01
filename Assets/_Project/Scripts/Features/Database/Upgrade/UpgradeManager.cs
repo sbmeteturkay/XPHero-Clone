@@ -8,10 +8,10 @@ public class UpgradeData
     public int Power=>PlayerPrefs.GetInt("Upgrade_POWER_Value");
     public int CargoCapacity;
     public int HP=>PlayerPrefs.GetInt("Upgrade_HP_Value");
-    public int HPRecovery;
+    public int HPRecovery=>PlayerPrefs.GetInt("Upgrade_HP RECOVERY_Value");
     public int MoveSpeed=>PlayerPrefs.GetInt("Upgrade_MOVE SPEED_Value");
     public float CritChange;
-    public float AttackSpeed;
+    public float AttackSpeed=>PlayerPrefs.GetInt("Upgrade_ATTACK SPEED_Value");
     public float DoubleAttackChange;
     public float TripleAttack;
 }
@@ -61,6 +61,7 @@ public class UpgradeManager : MonoBehaviour
 
 public class UpgradeUnit
 {
+    public bool isPercentage;
     public int level;
     public string key;
     private float baseValue;
@@ -77,6 +78,7 @@ public class UpgradeUnit
         baseRate= upgrade.baseRate;
         baseRateIncrease= upgrade.rateIncrease;
         periodLenght=upgrade.periodLength;
+        isPercentage =upgrade.isPercentage;
         
         if(!PlayerPrefs.HasKey(key)){
             PlayerPrefs.SetInt(key,1);
@@ -106,9 +108,9 @@ public class UpgradeUnit
         );
     }
 
-    public int GetNextValue()
+    public float GetNextValue()
     {
-        return (int)UpgradeFormulas.ExponentialPiecewise(
+        return UpgradeFormulas.ExponentialPiecewise(
             upgradeLevel: level+1,
             baseValue: baseValue,
             baseRate: baseRate,

@@ -50,9 +50,7 @@ public class HealthBarManager : IInitializable, ILateTickable, IDisposable
             if (!instance.isActive) continue;
 
             var targetPos = instance.lastPosition + Vector3.up * settings.offsetY;
-            var direction = (targetPos - cameraPos).normalized;
-            var angle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-            var rotation = Quaternion.Euler(0, angle, 0);
+            var rotation = camera.transform.rotation;
             var scale = new Vector3(settings.width, settings.height, 1);
 
             var matrix = Matrix4x4.TRS(targetPos, rotation, scale);

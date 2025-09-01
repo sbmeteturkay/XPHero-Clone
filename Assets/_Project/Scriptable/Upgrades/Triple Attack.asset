@@ -15,4 +15,10 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 8ae2dcfae07474b6c9350aa093686e7c, type: 3}
   upgradeName: TRIPLE ATTACK
   description: Increase Triple Attack Chance
+  isPercentage: 1
   maxLevel: 20
+  baseValue: 0
+  basePrice: 10
+  baseRate: 3
+  rateIncrease: -0.25
+  periodLength: 6

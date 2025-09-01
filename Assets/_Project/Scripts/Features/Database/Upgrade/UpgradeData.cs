@@ -9,8 +9,8 @@ public class UpgradeSO : ScriptableObject
     [TextArea] public string description;
 
     [Header("Editable Data")]
+    public bool isPercentage;
     public int maxLevel = 100;
-
     public float baseValue = 1;
     public int basePrice=10;
     public float baseRate= 1.25f;

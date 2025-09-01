@@ -36,7 +36,7 @@ public static class UpgradeFormulas
         float currentRate = baseRate + (currentPeriod * rateIncrease);
 
         // Mevcut periyotun başındaki seviye değerini hesaplar.
-        float startValueForCurrentPeriod = baseValue;
+        float startValueForCurrentPeriod = Mathf.Max(1,baseValue);
         for (int i = 0; i < currentPeriod; i++)
         {
             float periodRate = baseRate + (i * rateIncrease);
@@ -48,6 +48,7 @@ public static class UpgradeFormulas
 
         // Son değeri, periyot başındaki değere mevcut periyodun artış oranını uygulayarak hesaplar.
         float finalValue = startValueForCurrentPeriod * Mathf.Pow(currentRate, levelInPeriod);
+        finalValue = baseValue == 0 && upgradeLevel == 1 ? 0 : finalValue;
 
         return finalValue;
     }

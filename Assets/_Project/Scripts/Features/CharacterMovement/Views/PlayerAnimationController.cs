@@ -14,5 +14,9 @@ namespace Game.Feature.Player
         {
             Animator.SetBool(propertyName,value);
         }
+        public void SetFloat(string propertyName,float value)
+        {
+            Animator.SetFloat(propertyName,value);
+        }
     }
 }

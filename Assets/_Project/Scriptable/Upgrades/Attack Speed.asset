@@ -15,4 +15,10 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: b6adf1cf14f6d464194562461987edf1, type: 3}
   upgradeName: ATTACK SPEED
   description: Increase Your Attack Speed
+  isPercentage: 1
   maxLevel: 55
+  baseValue: 100
+  basePrice: 50
+  baseRate: 1.033
+  rateIncrease: 0.01
+  periodLength: 5

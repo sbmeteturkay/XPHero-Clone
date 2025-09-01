@@ -1,6 +1,5 @@
 using TMPro;
 using Zenject;
-using UnityEngine;
 
 namespace UI.PopupSystem
 {

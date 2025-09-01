@@ -17,4 +17,10 @@ MonoBehaviour:
   description: 'Increase HP Recovery
 
 '
+  isPercentage: 0
   maxLevel: 499
+  baseValue: 20
+  basePrice: 10
+  baseRate: 1.1
+  rateIncrease: -0.01
+  periodLength: 20

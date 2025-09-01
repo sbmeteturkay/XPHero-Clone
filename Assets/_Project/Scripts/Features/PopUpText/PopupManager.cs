@@ -31,6 +31,7 @@ namespace UI.PopupSystem
             if (popup == null) return;
 
             popup.transform.position = position;
+            popup.transform.rotation=Camera.main.transform.rotation;
             popup.SetText(text);
 
             AnimatePopup(popup, color).Forget();
@@ -38,38 +39,34 @@ namespace UI.PopupSystem
 
         private async UniTask AnimatePopup(TextMeshPro popup, Color color)
         {
-            if (isDisposed || popup == null) return;
+            if (isDisposed) return;
 
             float duration = 0.5f;
             Vector3 endPos = popup.transform.position + Vector3.up * 1.5f;
 
             // Position animasyonu
-            var positionTween = Tween.Position(popup.transform, endPos, duration, Ease.Linear).OnComplete(() =>
+            var positionTween = Tween.Position(popup.transform, endPos, duration, Ease.OutExpo).OnComplete(() =>
             {
                 if (!isDisposed && popup != null)
                 {
                     pool.Despawn(popup);
                 }
-            });;
+            });
 
-            // Alpha animasyonu - renderer'ı cache'le
-            var renderer = popup.GetComponent<Renderer>();
-            if (renderer == null)
-            {
-                pool.Despawn(popup);
-                return;
-            }
-
-            var alphaTween = Tween.Custom(1f, 0f, duration,
-                onValueChange: (alpha) =>
-                {
-                    if (isDisposed || popup == null) return;
-
-                    mpb.SetColor("_FaceColor", new Color(color.r, color.g, color.b, alpha));
-                    renderer.SetPropertyBlock(mpb);
-                }
-                ,Ease.InQuad
-            );
+            popup.transform.localScale = Vector3.one*1.25f ;
+            var scaleTween = Tween.Scale(popup.transform, Vector3.one* .75f, duration, Ease.OutExpo);
+            //
+            // var alphaTween = Tween.Custom(.2f, 1f, duration,
+            //     onValueChange: (alpha) =>
+            //     {
+            //         if (isDisposed || popup == null) return;
+            //
+            //         var popupColor = popup.color;
+            //         popupColor.a = alpha;
+            //         popup.color = popupColor;
+            //     }
+            //     ,Ease.InQuad
+            // );
 
             // Sadece cancellation için delay - performans için minimal
             await UniTask.Delay(
